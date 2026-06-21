@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────── Theme Variables ───────────────────────── */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --primary: #0052cc;
+  --primary-hover: #0747a6;
+  --primary-light: #deebff;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --success-text: #065f46;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --warning-text: #92400e;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --danger-text: #991b1b;
+  --purple: #8b5cf6;
+  --purple-light: #f5f3ff;
+  --purple-text: #5b21b6;
+  --font-body: 'Inter', sans-serif;
+  --font-title: 'Outfit', sans-serif;
+}
+
+
+/* ───────────────────────── Base Reset ───────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ───────────────────────── Scrollbar ───────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ───────────────────────── Badge Colors ───────────────────────── */
+.badge-present, .badge-approved, .badge-reviewed, .badge-live, .badge-p {
+  background-color: var(--success-light); color: var(--success-text);
+}
+.badge-partial, .badge-pending, .badge-ready, .badge-waiting-for-checkin, .badge-l, .badge-leave, .badge-submitted {
+  background-color: var(--warning-light); color: var(--warning-text);
+}
+.badge-absent, .badge-rejected, .badge-resubmit, .badge-ab {
+  background-color: var(--danger-light); color: var(--danger-text);
+}
+.badge-checked-in {
+  background-color: var(--primary-light); color: var(--primary);
+}
+.badge-checked-out, .badge-waiting {
+  background-color: var(--bg-hover); color: var(--text-muted);
+}
+
+/* ───────────────────────── Auth Screen ───────────────────────── */
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 440px;
+  align-items: start;
+  gap: 40px;
+  padding: 40px 3%;
+  background-color: #ffffff;
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+}
+@media (max-width: 1024px) {
+  .auth-shell { grid-template-columns: 1fr; gap: 40px; padding: 40px 24px; }
+}
+
+.auth-glass-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+  border-radius: 16px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.auth-glass-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px rgba(0, 82, 204, 0.08);
+}
+
+.auth-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.auth-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.auth-input-field {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.auth-input-field:focus {
+  border-color: var(--primary);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+.auth-input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.auth-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  position: relative;
+}
+.auth-pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #10b981;
+  animation: pulse-ring 1.8s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.5); opacity: 1; }
+  80%, 100% { transform: scale(1.8); opacity: 0; }
+}
+
+.animate-glow-text {
+  background: linear-gradient(135deg, var(--text-primary) 30%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.animate-glow-cyan-text {
+  background: linear-gradient(135deg, var(--primary) 30%, var(--success) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* ───────────────────────── Animations ───────────────────────── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDown { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+.animate-fade-in { animation: fadeIn 0.2s ease-out; }
+.animate-slide-up { animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-slide-down { animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-slide-right { animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ───────────────────────── Metric Icon Backgrounds ───────────────────────── */
+.metric-icon-blue { background-color: rgba(0, 82, 204, 0.08); color: #0052cc; }
+.metric-icon-purple { background-color: rgba(139, 92, 246, 0.08); color: #8b5cf6; }
+.metric-icon-green { background-color: rgba(16, 185, 129, 0.08); color: #10b981; }
+.metric-icon-orange { background-color: rgba(245, 158, 11, 0.08); color: #f59e0b; }
+
+
+/* ───────────────────────── Transitions ───────────────────────── */
+button, a, input, select, textarea {
+  transition: all 0.15s ease;
+}
