@@ -1,67 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lms.ethnotech.com/</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/dashboard</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/dashboard</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/attendance</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/attendance</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/checkin</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/checkin</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/leaves</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/leaves</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/tasks</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/tasks</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/quizzes</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/quizzes</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/leetcode</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/leetcode</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/leaderboard</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/leaderboard</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/chat</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/chat</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/profile</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/profile</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/batches</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/batches</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms.ethnotech.com/reviews</loc>
+    <loc>https://lms-eth-mits-ui.vercel.app/reviews</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

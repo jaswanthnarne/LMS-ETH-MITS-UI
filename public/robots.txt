@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://lms.ethnotech.com/sitemap.xml
+Sitemap: https://lms-eth-mits-ui.vercel.app/sitemap.xml
