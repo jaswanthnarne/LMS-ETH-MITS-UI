@@ -8,6 +8,8 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
   const [manualStudent, setManualStudent] = useState({ name: '', email: '', rollNumber: '', phone: '' });
   const [bulkText, setBulkText] = useState('');
   const [importNotice, setImportNotice] = useState('');
+  const [defaultPassword, setDefaultPassword] = useState('mits@3!');
+  const [validatedStudents, setValidatedStudents] = useState([]);
   
   // Modals Open State
   const [isCreateBatchOpen, setIsCreateBatchOpen] = useState(false);
@@ -84,36 +86,75 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
     setIsAddStudentOpen(false);
   }
 
-  async function handleBulkImport(event) {
-    event.preventDefault();
-    if (!selectedBatchId || !bulkText.trim()) return;
+  function downloadCSVTemplate() {
+    const headers = "Name,Email,RollNumber,Phone\nSaran,saran@mits.edu,22MITS02,9876543211\n";
+    const blob = new Blob([headers], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "mits_student_template.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
     
-    const lines = bulkText.split('\n');
-    const students = [];
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      const parts = line.split(',');
-      if (parts.length >= 2) {
-        students.push({
+    setImportNotice('Reading file...');
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      const lines = text.split('\n');
+      const parsedStudents = [];
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        parsedStudents.push({
           name: parts[0]?.trim() || '',
           email: parts[1]?.trim() || '',
           rollNumber: parts[2]?.trim() || '',
           phone: parts[3]?.trim() || ''
         });
       }
-    }
+      
+      if (parsedStudents.length === 0) {
+        setImportNotice('No student records found in the uploaded file.');
+        return;
+      }
+      
+      setImportNotice(`Validating ${parsedStudents.length} records with database...`);
+      try {
+        const validationResult = await api.post(`/api/batches/${selectedBatchId}/students/validate-import`, {
+          students: parsedStudents
+        });
+        setValidatedStudents(validationResult);
+        setImportNotice('');
+      } catch (err) {
+        setImportNotice(`Validation failed: ${err.message}`);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
 
-    if (students.length === 0) {
-      setImportNotice('No valid rows found. Format: Name, Email, Roll, Phone');
-      return;
-    }
-
-    setImportNotice(`Importing ${students.length} students...`);
+  async function handleConfirmImport(event) {
+    event.preventDefault();
+    const validStudents = validatedStudents.filter(s => s.isValid);
+    if (validStudents.length === 0) return;
+    
+    setImportNotice(`Importing ${validStudents.length} students...`);
     await action(
-      () => api.post(`/api/batches/${selectedBatchId}/students/bulk`, { students }),
-      `Successfully imported ${students.length} students`
+      () => api.post(`/api/batches/${selectedBatchId}/students/bulk`, {
+        students: validStudents,
+        defaultPassword
+      }),
+      `Successfully imported ${validStudents.length} students`
     );
-    setBulkText('');
+    setValidatedStudents([]);
     setImportNotice('');
     setIsBulkImportOpen(false);
   }
@@ -198,6 +239,13 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
                 onClick={() => setIsAddStudentOpen(true)}
               >
                 <UserPlus size={15} /> Add Student
+              </button>
+              <button 
+                className="flex items-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-3 py-2.5 rounded-lg"
+                onClick={downloadCSVTemplate}
+                title="Download CSV Template for Bulk Student Onboarding"
+              >
+                <Upload size={15} className="rotate-180" /> Template
               </button>
               <button 
                 className="flex items-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-3 py-2.5 rounded-lg"
@@ -368,25 +416,117 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
       </Modal>
 
       {/* Bulk Import Students Modal */}
-      <Modal isOpen={isBulkImportOpen} onClose={() => setIsBulkImportOpen(false)} title="Bulk Import Students via CSV">
-        <form className="flex flex-col gap-4" onSubmit={handleBulkImport}>
-          <p className="text-xs text-textMuted leading-relaxed">
-            Paste comma-separated rows below:<br />
-            <code className="bg-bgPrimary border border-borderCool px-1 py-0.5 rounded font-mono text-[10px]">Name, Email, RollNumber, Phone</code> (one per line)
-          </p>
-          <TextArea
-            placeholder="Jaswanth Narne, jaswanth@mits.edu, 22MITS01, 9876543210&#10;Saran, saran@mits.edu, 22MITS02, 9876543211"
-            value={bulkText}
-            onChange={setBulkText}
-            className="font-mono text-xs"
-            rows={6}
-            required
-          />
-          {importNotice && <p className="text-xs text-warning bg-warning/10 border border-warning/20 p-2.5 rounded-lg font-medium">{importNotice}</p>}
-          <button className="flex items-center justify-center gap-2 w-full text-center text-sm font-semibold bg-primary hover:bg-primary/95 text-white py-2.5 rounded-lg shadow-sm">
-            <Upload size={16} /> Process Import
-          </button>
-        </form>
+      <Modal 
+        isOpen={isBulkImportOpen} 
+        onClose={() => { setIsBulkImportOpen(false); setValidatedStudents([]); setImportNotice(''); }} 
+        title="Bulk Import Students via CSV"
+      >
+        <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-bold text-textSecondary">1. Download Template</span>
+            <button 
+              type="button" 
+              onClick={downloadCSVTemplate}
+              className="flex items-center justify-center gap-1.5 w-full text-center text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-textMuted text-textPrimary py-2 rounded-lg transition-colors animate-all"
+            >
+              <Upload size={14} className="rotate-180" /> Download CSV Template
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-bold text-textSecondary">2. Upload CSV File</span>
+            <label className="flex flex-col items-center justify-center border border-dashed border-borderCool rounded-xl p-4 bg-bgPrimary hover:bg-bgHover/20 cursor-pointer transition-colors">
+              <Upload size={20} className="text-textMuted mb-1" />
+              <span className="text-xs font-semibold text-textPrimary">Select CSV File</span>
+              <span className="text-[10px] text-textMuted mt-0.5">Name, Email, RollNumber, Phone</span>
+              <input 
+                type="file" 
+                accept=".csv" 
+                className="hidden" 
+                onChange={handleFileChange} 
+              />
+            </label>
+          </div>
+
+          {importNotice && (
+            <p className="text-xs text-warning bg-warning/10 border border-warning/20 p-2.5 rounded-lg font-medium text-center">
+              {importNotice}
+            </p>
+          )}
+
+          {validatedStudents.length > 0 && (
+            <form onSubmit={handleConfirmImport} className="flex flex-col gap-4 mt-2">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-textSecondary">3. Set Default Password</label>
+                <Field 
+                  placeholder="Password for new students" 
+                  value={defaultPassword} 
+                  onChange={setDefaultPassword} 
+                  required 
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-textSecondary">
+                  4. Preview Records ({validatedStudents.filter(s => s.isValid).length} valid, {validatedStudents.filter(s => !s.isValid).length} invalid)
+                </span>
+                
+                <div className="border border-borderCool rounded-lg overflow-hidden max-h-[250px] overflow-y-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-bgPrimary text-textMuted font-bold border-b border-borderCool">
+                        <th className="p-2 w-12 text-center">Status</th>
+                        <th className="p-2">Name</th>
+                        <th className="p-2">Email</th>
+                        <th className="p-2">Roll</th>
+                        <th className="p-2">Phone</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-borderCool">
+                      {validatedStudents.map((s, idx) => (
+                        <tr 
+                          key={idx} 
+                          className={s.isValid ? "hover:bg-bgHover/20" : "bg-danger-light/10 text-danger hover:bg-danger-light/20"}
+                        >
+                          <td className="p-2 text-center font-bold">
+                            {s.isValid ? (
+                              <span className="text-success">✓</span>
+                            ) : (
+                              <span className="text-danger" title={s.error}>✗</span>
+                            )}
+                          </td>
+                          <td className="p-2 font-semibold truncate max-w-[80px]" title={s.name}>{s.name}</td>
+                          <td className="p-2 truncate max-w-[120px]" title={s.email}>{s.email}</td>
+                          <td className="p-2 font-mono">{s.rollNumber || '—'}</td>
+                          <td className="p-2">{s.phone || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {validatedStudents.filter(s => !s.isValid).length > 0 && (
+                <div className="text-[11px] text-danger bg-danger/10 border border-danger/20 p-2.5 rounded-lg leading-relaxed">
+                  <strong>Validation Warnings:</strong> Some records are invalid and will be skipped during import:
+                  <ul className="list-disc pl-4 mt-1">
+                    {Array.from(new Set(validatedStudents.filter(s => !s.isValid).map(s => s.error))).map((err, idx) => (
+                      <li key={idx}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button 
+                type="submit"
+                disabled={validatedStudents.filter(s => s.isValid).length === 0}
+                className="flex items-center justify-center gap-2 w-full text-center text-sm font-semibold bg-primary hover:bg-primary/95 text-white py-2.5 rounded-lg shadow-sm disabled:opacity-50"
+              >
+                <Upload size={16} /> Onboard {validatedStudents.filter(s => s.isValid).length} Valid Students
+              </button>
+            </form>
+          )}
+        </div>
       </Modal>
 
       {/* View Student Profile Modal */}

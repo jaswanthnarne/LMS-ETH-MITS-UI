@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -354,6 +354,136 @@ function Footer({ onOpenLegal }) {
   );
 }
 
+function FirstTimePasswordChange({ user, api, action, refresh, logout }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [showPass, setShowPass] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (newPassword.length < 6) {
+      setErrorMsg('New password must be at least 6 characters long');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('New password and confirm password do not match');
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setErrorMsg('New password cannot be the same as current password');
+      return;
+    }
+
+    const res = await action(async () => {
+      return await api.post('/api/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+    }, 'Password updated successfully!');
+
+    if (res) {
+      await refresh('silent');
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-textPrimary select-none">
+      <div className="flex items-center gap-3 mb-8 bg-white p-3 rounded-2xl border border-borderCool shadow-sm">
+        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow overflow-hidden border p-0.5">
+          <img src="/ethnotech_academic_solutions_logo.jpg" alt="Ethnotech" className="w-full h-full object-contain rounded-lg" />
+        </div>
+        <div className="flex flex-col text-left">
+          <span className="text-[9px] uppercase tracking-widest text-textMuted font-bold">LMS Portal</span>
+          <strong className="text-textPrimary font-title text-xs tracking-wide">MITS | Ethnotech</strong>
+        </div>
+      </div>
+
+      <form 
+        className="w-full max-w-md p-8 sm:p-10 rounded-[32px] bg-white border border-borderCool flex flex-col gap-6 text-textPrimary shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] animate-in fade-in zoom-in duration-300" 
+        onSubmit={handleSubmit}
+      >
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-black font-title tracking-tight text-textPrimary">
+            Secure Your Account
+          </h2>
+          <p className="text-xs text-textMuted leading-relaxed font-body">
+            This is your first login. To protect your profile, please change your default password before accessing your workspace.
+          </p>
+        </div>
+
+        {errorMsg && (
+          <div className="text-xs text-danger bg-danger/10 border border-danger/20 p-3 rounded-xl font-semibold text-center">
+            {errorMsg}
+          </div>
+        )}
+
+        <div className="auth-input-container">
+          <label className="auth-input-label">Current Password</label>
+          <input 
+            type="password" 
+            required 
+            className="auth-input-field" 
+            placeholder="Enter current password" 
+            value={currentPassword} 
+            onChange={(e) => setCurrentPassword(e.target.value)} 
+          />
+        </div>
+
+        <div className="auth-input-container">
+          <label className="auth-input-label">New Password</label>
+          <div className="relative w-full">
+            <input 
+              type={showPass ? 'text' : 'password'} 
+              required 
+              className="auth-input-field pr-12 w-full" 
+              placeholder="Min 6 characters" 
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)} 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-textMuted hover:text-textPrimary hover:bg-bgSecondary transition-colors flex items-center justify-center"
+            >
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="auth-input-container">
+          <label className="auth-input-label">Confirm New Password</label>
+          <input 
+            type="password" 
+            required 
+            className="auth-input-field" 
+            placeholder="Confirm new password" 
+            value={confirmPassword} 
+            onChange={(e) => setConfirmPassword(e.target.value)} 
+          />
+        </div>
+        
+        <div className="flex flex-col gap-3 mt-4">
+          <button className="flex items-center justify-center gap-2 w-full text-center text-sm font-semibold bg-primary hover:bg-primary-hover text-white py-3.5 rounded-xl shadow-lg hover:shadow-primary/25 transition-all duration-300">
+            <ShieldCheck size={18} /> Update & Enter Workspace
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={logout} 
+            className="w-full text-center text-xs font-semibold text-textMuted hover:text-textPrimary hover:underline transition-colors py-2"
+          >
+            Cancel and Log Out
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -399,6 +529,7 @@ function AppContent() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [legalModal, setLegalModal] = useState(null);
+  const refreshingRef = useRef(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -422,6 +553,8 @@ function AppContent() {
 
   async function refresh(section = 'all') {
     if (!token) return;
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
     setLoading(true);
     try {
       const me = await api.get('/api/auth/me');
@@ -464,6 +597,7 @@ function AppContent() {
       addToast(error.message, 'error');
     } finally {
       setLoading(false);
+      refreshingRef.current = false;
     }
   }
 
@@ -768,6 +902,15 @@ function AppContent() {
       <ToastContainer toasts={toasts} setToasts={setToasts} />
       {loading && <LoadingOverlay />}
       </div>
+    );
+  }
+  if (token && user && user.mustChangePassword) {
+    return (
+      <>
+        <FirstTimePasswordChange user={user} api={api} action={action} refresh={refresh} logout={logout} />
+        <ToastContainer toasts={toasts} setToasts={setToasts} />
+        {loading && <LoadingOverlay />}
+      </>
     );
   }
 
