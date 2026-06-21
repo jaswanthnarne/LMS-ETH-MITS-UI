@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { ShieldCheck, CalendarCheck, PlayCircle, Code2, GraduationCap, X, Bell, Trophy, Sun, Moon, Monitor, MapPin, Mail, Youtube, Linkedin, Instagram } from 'lucide-react';
+import { ShieldCheck, CalendarCheck, PlayCircle, Code2, GraduationCap, X, Bell, Trophy, Sun, Moon, Monitor, MapPin, Mail, Youtube, Linkedin, Instagram, Eye, EyeOff } from 'lucide-react';
 import './styles.css';
 
 // Import Layout and Shared
@@ -358,6 +358,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const prefix = user?.role === 'admin' ? '/admin/root/console' : '';
   let rawPath = location.pathname;
@@ -664,14 +665,24 @@ function AppContent() {
 
           <div className="auth-input-container">
             <label className="auth-input-label">Password</label>
-            <input 
-              type="password" 
-              required 
-              className="auth-input-field" 
-              placeholder="••••••••" 
-              value={forms.auth.password} 
-              onChange={(e) => setForm('auth', 'password', e.target.value)} 
-            />
+            <div className="relative w-full">
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                required 
+                className="auth-input-field pr-12 w-full" 
+                placeholder="••••••••" 
+                value={forms.auth.password} 
+                onChange={(e) => setForm('auth', 'password', e.target.value)} 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-textMuted hover:text-textPrimary hover:bg-bgSecondary transition-colors flex items-center justify-center"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           
           <button className="flex items-center justify-center gap-2 w-full text-center text-base font-semibold bg-primary hover:bg-primary-hover text-white py-4 rounded-xl shadow-lg hover:shadow-primary/25 mt-4 transition-all duration-300">
