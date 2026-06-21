@@ -492,6 +492,10 @@ function AppContent() {
 
   useEffect(() => {
     if (!user?.batch?._id && user?.role !== 'admin') return;
+    if (API_URL.includes('vercel.app')) {
+      console.log('Skipping Socket.io connection on Vercel serverless environment.');
+      return;
+    }
     socket.connect();
     if (user?.batch?._id) socket.emit('join-batch', user.batch._id);
     
