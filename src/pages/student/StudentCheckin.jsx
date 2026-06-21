@@ -23,8 +23,8 @@ export default function StudentCheckin({ data, api, action }) {
         <div className="pb-5 mb-5 border-b border-borderCool">
           <SectionTitle icon={Clock} title="Daily Check-in & Check-out Panel" />
           <p className="text-xs text-textMuted mt-1">
-            Log your training session hours daily. Check-in is allowed after 9:00 AM. 
-            Earn points based on duration: &ge;7.5 hrs = 10 pts, &lt;3 hrs = 0 pts, in-between proportional.
+            Log your training session hours daily. Check-in is allowed between 9:00 AM and 5:00 PM IST. 
+            Auto check-out is applied if you cross the day. Earn points based on duration: &ge;7.5 hrs = 10 pts, &lt;3 hrs = 0 pts, in-between proportional.
           </p>
         </div>
 

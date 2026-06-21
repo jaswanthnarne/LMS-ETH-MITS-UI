@@ -189,17 +189,21 @@ function ToastContainer({ toasts, setToasts }) {
 
 function LoadingOverlay() {
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="flex flex-col items-center justify-center gap-6">
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-          <div className="absolute inset-0 border-[4px] border-borderCool border-t-primary rounded-full animate-spin"></div>
-          <div className="absolute inset-2 bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden p-3">
-            <img src="/ethnotech_academic_solutions_logo.jpg" alt="Ethnotech" className="w-full h-full object-contain animate-pulse" />
-          </div>
-        </div>
-        <h3 className="text-primary font-bold text-sm sm:text-base font-title tracking-widest uppercase animate-pulse">Loading</h3>
+    <>
+      <style>{`
+        @keyframes loading-progress {
+          0% { left: -40%; right: 100%; }
+          50% { left: 80%; right: -20%; }
+          100% { left: 100%; right: -40%; }
+        }
+      `}</style>
+      <div className="fixed top-0 left-0 right-0 h-1 bg-primary/25 z-[10000] overflow-hidden pointer-events-none">
+        <div 
+          className="absolute top-0 bottom-0 bg-primary rounded-full" 
+          style={{ animation: 'loading-progress 1.5s infinite ease-in-out' }}
+        ></div>
       </div>
-    </div>
+    </>
   );
 }
 
