@@ -2,67 +2,67 @@
 <?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/dashboard</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/dashboard</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/attendance</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/attendance</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/checkin</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/checkin</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/leaves</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/leaves</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/tasks</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/tasks</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/quizzes</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/quizzes</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/leetcode</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/leetcode</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/leaderboard</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/leaderboard</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/chat</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/chat</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/profile</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/profile</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/batches</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/batches</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lms-eth-mits-ui.vercel.app/reviews</loc>
+    <loc>https://clmsmits.jaswanthnarne.online/reviews</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

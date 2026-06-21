@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://lms-eth-mits-ui.vercel.app/sitemap.xml
+Sitemap: https://clmsmits.jaswanthnarne.online/sitemap.xml
