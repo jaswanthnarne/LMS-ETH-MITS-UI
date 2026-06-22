@@ -563,36 +563,57 @@ function AppContent() {
     try {
       const me = await api.get('/api/auth/me');
       setUser(me);
-      const [summary, batches, tasks, quizzes, leetcodeProblems, colleges] = await Promise.all([
-        api.get('/api/analytics/summary'),
-        api.get('/api/batches'),
-        api.get('/api/tasks'),
-        api.get('/api/quiz'),
-        api.get('/api/leetcode/problems'),
-        api.get('/api/colleges')
-      ]);
 
-      const next = { summary, batches, tasks, quizzes, leetcodeProblems, colleges };
+      const safeGet = async (path, defaultValue = []) => {
+        try {
+          return await api.get(path);
+        } catch (err) {
+          console.warn(`Failed to fetch ${path}:`, err.message);
+          return defaultValue;
+        }
+      };
+
+      const query = new URLSearchParams();
+      if (forms.filters.date) query.set('date', forms.filters.date);
+      if (forms.filters.batch) query.set('batch', forms.filters.batch);
+
+      // Define all endpoints to fetch
+      const keys = ['summary', 'batches', 'tasks', 'quizzes', 'leetcodeProblems', 'colleges'];
+      const promises = [
+        safeGet('/api/analytics/summary', {}),
+        safeGet('/api/batches', []),
+        safeGet('/api/tasks', []),
+        safeGet('/api/quiz', []),
+        safeGet('/api/leetcode/problems', []),
+        safeGet('/api/colleges', [])
+      ];
+
       if (me.role === 'admin') {
-        const query = new URLSearchParams();
-        if (forms.filters.date) query.set('date', forms.filters.date);
-        if (forms.filters.batch) query.set('batch', forms.filters.batch);
-        Object.assign(next, {
-          pending: await api.get('/api/auth/pending'),
-          attendance: await api.get(`/api/attendance/logs?${query.toString()}`),
-          leaves: await api.get('/api/leave'),
-          submissions: await api.get('/api/tasks/submissions'),
-          leetcode: await api.get('/api/leetcode'),
-          leetcodeSubmissions: await api.get('/api/leetcode/submissions')
-        });
+        keys.push('pending', 'attendance', 'leaves', 'submissions', 'leetcode', 'leetcodeSubmissions');
+        promises.push(
+          safeGet('/api/auth/pending', []),
+          safeGet(`/api/attendance/logs?${query.toString()}`, []),
+          safeGet('/api/leave', []),
+          safeGet('/api/tasks/submissions', []),
+          safeGet('/api/leetcode', []),
+          safeGet('/api/leetcode/submissions', [])
+        );
       } else {
-        Object.assign(next, {
-          attendance: await api.get('/api/attendance/mine'),
-          leaves: await api.get('/api/leave/mine'),
-          leetcode: (await api.get('/api/leetcode/mine')) || null,
-          submissions: await api.get('/api/tasks/submissions/mine')
-        });
+        keys.push('attendance', 'leaves', 'leetcode', 'submissions');
+        promises.push(
+          safeGet('/api/attendance/mine', []),
+          safeGet('/api/leave/mine', []),
+          safeGet('/api/leetcode/mine', null),
+          safeGet('/api/tasks/submissions/mine', [])
+        );
       }
+
+      const results = await Promise.all(promises);
+      const next = {};
+      keys.forEach((key, idx) => {
+        next[key] = results[idx];
+      });
+
       setState((current) => ({ ...current, ...next }));
       if (section !== 'silent') {
         addToast('LMS Workspace synchronized successfully', 'success');
