@@ -948,7 +948,7 @@ function AppContent() {
         user.role === 'admin' ? (
           <AdminDashboard user={user} data={state} api={api} action={action} go={setActive} />
         ) : (
-          <StudentDashboard user={user} data={state} api={api} action={action} go={setActive} />
+          <StudentDashboard user={user} data={state} api={api} action={action} go={setActive} loading={loading} />
         )
       )}
 

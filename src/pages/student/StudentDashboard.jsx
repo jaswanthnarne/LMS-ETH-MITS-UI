@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { PlayCircle, CheckCircle, LogOut, Clock, Target, Calendar, Award, Code2, Hourglass, Flame, RefreshCw, Trophy } from 'lucide-react';
 import { Badge, DataList, Row, SectionTitle } from '../../components/Shared';
 
-export default function StudentDashboard({ user, data, api, action, go }) {
+export default function StudentDashboard({ user, data, api, action, go, loading }) {
   const records = data.attendance || [];
   const [syncing, setSyncing] = useState(false);
   const [leaderboardStats, setLeaderboardStats] = useState(null);
+
+  // Check if we are in initial background loading phase
+  const isInitialLoading = loading && (!data.tasks || data.tasks.length === 0) && (!data.attendance || data.attendance.length === 0);
 
   // Calculate statistics
   const presentDays = records.filter(r => r.status === 'P').length;
@@ -68,7 +71,11 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           <div className="flex flex-col min-w-0">
             <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Attendance Rate</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
-              {attendancePercentage}%
+              {isInitialLoading ? (
+                <span className="inline-block w-12 h-5 bg-borderCool rounded animate-pulse" />
+              ) : (
+                `${attendancePercentage}%`
+              )}
             </strong>
           </div>
         </div>
@@ -79,8 +86,12 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Today's Status</span>
-            <strong className="text-base font-bold text-textPrimary leading-none mt-1">
-              {todayStatus}
+            <strong className="text-base font-bold text-textPrimary leading-none mt-1 truncate">
+              {isInitialLoading ? (
+                <span className="inline-block w-16 h-5 bg-borderCool rounded animate-pulse" />
+              ) : (
+                todayStatus
+              )}
             </strong>
           </div>
         </div>
@@ -92,7 +103,11 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           <div className="flex flex-col min-w-0">
             <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Assigned Tasks</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
-              {data.tasks.length} total
+              {isInitialLoading ? (
+                <span className="inline-block w-10 h-5 bg-borderCool rounded animate-pulse" />
+              ) : (
+                `${data.tasks.length} total`
+              )}
             </strong>
           </div>
         </div>
@@ -104,7 +119,11 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           <div className="flex flex-col min-w-0">
             <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Quizzes</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
-              {data.quizzes.length} available
+              {isInitialLoading ? (
+                <span className="inline-block w-10 h-5 bg-borderCool rounded animate-pulse" />
+              ) : (
+                `${data.quizzes.length} available`
+              )}
             </strong>
           </div>
         </div>
@@ -116,7 +135,11 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           <div className="flex flex-col min-w-0">
             <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Overall Score</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
-              {leaderboardStats ? `${leaderboardStats.overallScore} pts` : '0 pts'}
+              {isInitialLoading ? (
+                <span className="inline-block w-14 h-5 bg-borderCool rounded animate-pulse" />
+              ) : (
+                leaderboardStats ? `${leaderboardStats.overallScore} pts` : '0 pts'
+              )}
             </strong>
           </div>
         </div>
@@ -128,24 +151,32 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           {/* Pending Tasks */}
           <article className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm flex flex-col gap-4">
             <SectionTitle icon={Target} title="My Pending Assignments" />
-            <DataList emptyText="Hooray! No pending homework tasks.">
-              <div className="grid grid-cols-1 gap-2.5">
-                {data.tasks.slice(0, 3).map((task) => (
-                  <Row 
-                    key={task._id} 
-                    title={task.title} 
-                    meta={`Due by: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}`}
-                  >
-                    <button 
-                      className="text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-3 py-1.5 rounded-lg"
-                      onClick={() => go('tasks')}
-                    >
-                      Submit Work
-                    </button>
-                  </Row>
-                ))}
+            
+            {isInitialLoading ? (
+              <div className="flex flex-col gap-2">
+                <div className="h-12 bg-bgPrimary border border-borderCool rounded-lg animate-pulse" />
+                <div className="h-12 bg-bgPrimary border border-borderCool rounded-lg animate-pulse" />
               </div>
-            </DataList>
+            ) : (
+              <DataList emptyText="Hooray! No pending homework tasks.">
+                <div className="grid grid-cols-1 gap-2.5">
+                  {data.tasks.slice(0, 3).map((task) => (
+                    <Row 
+                      key={task._id} 
+                      title={task.title} 
+                      meta={`Due by: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}`}
+                    >
+                      <button 
+                        className="text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-3 py-1.5 rounded-lg"
+                        onClick={() => go('tasks')}
+                      >
+                        Submit Work
+                      </button>
+                    </Row>
+                  ))}
+                </div>
+              </DataList>
+            )}
           </article>
         </div>
 
@@ -154,7 +185,9 @@ export default function StudentDashboard({ user, data, api, action, go }) {
           <article className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm flex flex-col gap-4 sticky top-6">
             <SectionTitle icon={Code2} title="Leetcode Metrics" />
             
-            {data.leetcode ? (
+            {isInitialLoading ? (
+              <div className="h-44 bg-bgPrimary border border-borderCool rounded-xl animate-pulse" />
+            ) : data.leetcode ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
