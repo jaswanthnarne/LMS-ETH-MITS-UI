@@ -9,6 +9,7 @@ export default function StudentCheckin({ data, api, action }) {
   // Find if today's check-in exists (date is today's string in local date)
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRecord = records.find(r => r.date === todayStr);
+  const hasCheckedInToday = !!(todayRecord && todayRecord.checkIn);
 
   function calculatePoints(hours) {
     if (!hours || hours < 3) return 0;
@@ -33,14 +34,14 @@ export default function StudentCheckin({ data, api, action }) {
           <div className="flex flex-col">
             <span className="text-[10px] text-textMuted font-bold uppercase tracking-wider">Today's Check-in State</span>
             <strong className="text-lg font-black text-textPrimary mt-1 uppercase">
-              {todayRecord ? (todayRecord.checkOut ? 'Checked Out' : 'Active') : 'Not Checked In'}
+              {hasCheckedInToday ? (todayRecord.checkOut ? 'Checked Out' : 'Active') : 'Not Checked In'}
             </strong>
           </div>
 
           <div className="flex flex-col">
             <span className="text-[10px] text-textMuted font-bold uppercase tracking-wider">Logged Hours</span>
             <strong className="text-lg font-black text-textPrimary mt-1">
-              {todayRecord?.totalHours ? `${todayRecord.totalHours.toFixed(2)} hrs` : '0.00 hrs'}
+              {hasCheckedInToday && todayRecord?.totalHours ? `${todayRecord.totalHours.toFixed(2)} hrs` : '0.00 hrs'}
             </strong>
           </div>
 
@@ -49,7 +50,7 @@ export default function StudentCheckin({ data, api, action }) {
             <div className="flex items-center gap-1.5 mt-1">
               <Award size={18} className="text-primary" />
               <strong className="text-lg font-black text-primary">
-                {todayRecord?.totalHours ? `${calculatePoints(todayRecord.totalHours)} / 10 pts` : '0 / 10 pts'}
+                {hasCheckedInToday && todayRecord?.totalHours ? `${calculatePoints(todayRecord.totalHours)} / 10 pts` : '0 / 10 pts'}
               </strong>
             </div>
           </div>
@@ -61,7 +62,7 @@ export default function StudentCheckin({ data, api, action }) {
             type="button"
             className="flex items-center gap-2 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-5 py-3 rounded-lg shadow-sm disabled:opacity-50 disabled:pointer-events-none"
             onClick={() => action(() => api.post('/api/attendance/check-in', {}), 'Checked in successfully')}
-            disabled={!!todayRecord}
+            disabled={hasCheckedInToday}
           >
             <Play size={14} className="fill-white/20" /> Check In Session
           </button>
@@ -69,7 +70,7 @@ export default function StudentCheckin({ data, api, action }) {
             type="button"
             className="flex items-center gap-2 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-5 py-3 rounded-lg disabled:opacity-50 disabled:pointer-events-none"
             onClick={() => action(() => api.post('/api/attendance/check-out', {}), 'Checked out successfully')}
-            disabled={!todayRecord || !!todayRecord.checkOut}
+            disabled={!hasCheckedInToday || !!todayRecord.checkOut}
           >
             <LogOut size={14} /> Check Out Session
           </button>
