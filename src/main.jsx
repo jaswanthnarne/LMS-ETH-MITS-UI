@@ -552,62 +552,19 @@ function AppContent() {
     refreshingRef.current = true;
     setLoading(true);
     try {
-      const me = await api.get('/api/auth/me');
-      setUser(me);
-      setIsInitializing(false);
-
-      const safeGet = async (path, defaultValue = []) => {
-        try {
-          return await api.get(path);
-        } catch (err) {
-          console.warn(`Failed to fetch ${path}:`, err.message);
-          return defaultValue;
-        }
-      };
-
       const query = new URLSearchParams();
       if (forms.filters.date) query.set('date', forms.filters.date);
       if (forms.filters.batch) query.set('batch', forms.filters.batch);
 
-      // Define all endpoints to fetch
-      const keys = ['summary', 'batches', 'tasks', 'quizzes', 'leetcodeProblems', 'colleges'];
-      const promises = [
-        safeGet('/api/analytics/summary', {}),
-        safeGet('/api/batches', []),
-        safeGet('/api/tasks', []),
-        safeGet('/api/quiz', []),
-        safeGet('/api/leetcode/problems', []),
-        safeGet('/api/colleges', [])
-      ];
-
-      if (me.role === 'admin') {
-        keys.push('pending', 'attendance', 'leaves', 'submissions', 'leetcode', 'leetcodeSubmissions');
-        promises.push(
-          safeGet('/api/auth/pending', []),
-          safeGet(`/api/attendance/logs?${query.toString()}`, []),
-          safeGet('/api/leave', []),
-          safeGet('/api/tasks/submissions', []),
-          safeGet('/api/leetcode', []),
-          safeGet('/api/leetcode/submissions', [])
-        );
-      } else {
-        keys.push('attendance', 'leaves', 'leetcode', 'submissions', 'leetcodeSubmissions');
-        promises.push(
-          safeGet('/api/attendance/mine', []),
-          safeGet('/api/leave/mine', []),
-          safeGet('/api/leetcode/mine', null),
-          safeGet('/api/tasks/submissions/mine', []),
-          safeGet('/api/leetcode/submissions/mine', [])
-        );
+      const data = await api.get(`/api/auth/init?${query.toString()}`);
+      if (data.user) {
+        setUser(data.user);
       }
+      setIsInitializing(false);
 
-      const results = await Promise.all(promises);
-      const next = {};
-      keys.forEach((key, idx) => {
-        next[key] = results[idx];
-      });
-
+      const { user: userIgnored, ...next } = data;
       setState((current) => ({ ...current, ...next }));
+
       if (section !== 'silent') {
         addToast('LMS Workspace synchronized successfully', 'success');
       }
