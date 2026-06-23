@@ -28,6 +28,8 @@ import StudentCheckin from './pages/student/StudentCheckin';
 import MyTasks from './pages/student/MyTasks';
 import LiveQuizPlayer from './pages/student/LiveQuizPlayer';
 import StudentLeetcode from './pages/student/StudentLeetcode';
+import StudentSubmissions from './pages/student/StudentSubmissions';
+import StudentTodo from './pages/student/StudentTodo';
 
 // Import Chat
 import BatchChat from './pages/chat/BatchChat';
@@ -105,7 +107,11 @@ function client(token) {
       }
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || 'Request failed');
+    if (!response.ok) {
+      const error = new Error(data.message || 'Request failed');
+      error.status = response.status;
+      throw error;
+    }
     return data;
   }
 
@@ -188,23 +194,7 @@ function ToastContainer({ toasts, setToasts }) {
 }
 
 function LoadingOverlay() {
-  return (
-    <>
-      <style>{`
-        @keyframes loading-progress {
-          0% { left: -40%; right: 100%; }
-          50% { left: 80%; right: -20%; }
-          100% { left: 100%; right: -40%; }
-        }
-      `}</style>
-      <div className="fixed top-0 left-0 right-0 h-1 bg-primary/25 z-[10000] overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-0 bottom-0 bg-primary rounded-full" 
-          style={{ animation: 'loading-progress 1.5s infinite ease-in-out' }}
-        ></div>
-      </div>
-    </>
-  );
+  return null;
 }
 
 function LegalModal({ type, onClose }) {
@@ -492,6 +482,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(!!localStorage.getItem('mits_lms_token'));
   const [showPassword, setShowPassword] = useState(false);
 
   const prefix = user?.role === 'admin' ? '/admin/root/console' : '';
@@ -501,7 +492,7 @@ function AppContent() {
   }
   const path = rawPath.replace(/^\/+/, '') || 'dashboard';
 
-  const validPaths = ['dashboard', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile'];
+  const validPaths = ['dashboard', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile', 'submissions', 'todo'];
   const isNotFound = location.pathname !== '/' && !validPaths.includes(path);
   const active = path;
 
@@ -599,12 +590,13 @@ function AppContent() {
           safeGet('/api/leetcode/submissions', [])
         );
       } else {
-        keys.push('attendance', 'leaves', 'leetcode', 'submissions');
+        keys.push('attendance', 'leaves', 'leetcode', 'submissions', 'leetcodeSubmissions');
         promises.push(
           safeGet('/api/attendance/mine', []),
           safeGet('/api/leave/mine', []),
           safeGet('/api/leetcode/mine', null),
-          safeGet('/api/tasks/submissions/mine', [])
+          safeGet('/api/tasks/submissions/mine', []),
+          safeGet('/api/leetcode/submissions/mine', [])
         );
       }
 
@@ -619,10 +611,14 @@ function AppContent() {
         addToast('LMS Workspace synchronized successfully', 'success');
       }
     } catch (error) {
+      if (error.status === 401 || error.status === 403) {
+        logout();
+      }
       addToast(error.message, 'error');
     } finally {
       setLoading(false);
       refreshingRef.current = false;
+      setIsInitializing(false);
     }
   }
 
@@ -715,6 +711,10 @@ function AppContent() {
     setToken('');
     setUser(null);
     navigate('/');
+  }
+
+  if (isInitializing) {
+    return null;
   }
 
   if (isMobile) {
@@ -1017,6 +1017,14 @@ function AppContent() {
 
       {active === 'profile' && (
         <Profile user={user} api={api} action={action} refresh={refresh} />
+      )}
+
+      {active === 'submissions' && user.role === 'student' && (
+        <StudentSubmissions data={state} api={api} action={action} />
+      )}
+
+      {active === 'todo' && user.role === 'student' && (
+        <StudentTodo data={state} user={user} />
       )}
 
       <ToastContainer toasts={toasts} setToasts={setToasts} />

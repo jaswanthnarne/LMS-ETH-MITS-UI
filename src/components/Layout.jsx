@@ -24,10 +24,12 @@ export default function Layout({ user, active, setActive, refresh, logout, child
 
   const studentNav = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'todo', icon: ClipboardList, label: 'My Todo' },
     { id: 'attendance', icon: CalendarCheck, label: 'Attendance' },
     { id: 'checkin', icon: Clock, label: 'Daily Check-in' },
     { id: 'leaves', icon: ClipboardList, label: 'Apply Leave' },
     { id: 'tasks', icon: BookOpen, label: 'My Tasks' },
+    { id: 'submissions', icon: ClipboardCheck, label: 'My Submissions' },
     { id: 'quizzes', icon: PlayCircle, label: 'My Quizzes' },
     { id: 'leetcode', icon: Code2, label: 'Leetcode Growth' },
     { id: 'leaderboard', icon: Trophy, label: 'Overall Leaderboard' },
@@ -285,10 +287,6 @@ export default function Layout({ user, active, setActive, refresh, logout, child
                 </div>
               )}
             </div>
-            <select defaultValue="all" className="hidden sm:block bg-transparent border border-borderCool text-textPrimary text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer focus:border-primary">
-              <option value="all">All Colleges</option>
-              {colleges.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
-            </select>
             <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-borderCool rounded-lg hover:bg-bgHover transition-colors disabled:opacity-50" onClick={() => refresh()} disabled={loading}>
               <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
               <span className="hidden sm:inline">Sync</span>
