@@ -93,7 +93,7 @@ const empty = {
   leetcodeAttempt: {},
   leetcodeReview: { score: 0, feedback: '', status: 'accepted' },
   message: { text: '' },
-  filters: { date: new Date().toISOString().slice(0, 10), batch: '' }
+  filters: { date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), batch: '' }
 };
 
 function client(token) {
@@ -165,7 +165,7 @@ function NotFound() {
 function ToastContainer({ toasts, setToasts }) {
   if (!toasts || toasts.length === 0) return null;
   return (
-    <div className="fixed top-5 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-[9999] w-full max-w-[360px] md:max-w-[420px] px-4 pointer-events-none">
+    <div className="fixed top-5 right-5 flex flex-col gap-2 z-[9999] w-full max-w-[360px] md:max-w-[420px] px-4 pointer-events-none">
       {toasts.map((t) => {
         const toastTypeCls = t.type === 'success' 
           ? 'border-success text-success bg-success-light dark:bg-success/15' 
@@ -556,12 +556,20 @@ function AppContent() {
       if (forms.filters.date) query.set('date', forms.filters.date);
       if (forms.filters.batch) query.set('batch', forms.filters.batch);
 
-      const data = await api.get(`/api/auth/init?${query.toString()}`);
+      // Fetch user profile and init collections in parallel
+      const mePromise = api.get('/api/auth/me');
+      const initPromise = api.get(`/api/auth/init?${query.toString()}`);
+
+      // Render the layout instantly as soon as user details load
+      const me = await mePromise;
+      setUser(me);
+      setIsInitializing(false);
+
+      // Populate dashboard statistics and other data when consolidated init finishes
+      const data = await initPromise;
       if (data.user) {
         setUser(data.user);
       }
-      setIsInitializing(false);
-
       const { user: userIgnored, ...next } = data;
       setState((current) => ({ ...current, ...next }));
 
@@ -921,7 +929,7 @@ function AppContent() {
         user.role === 'admin' ? (
           <AdminCheckinLogs data={state} forms={forms} setForm={setForm} api={api} action={action} refresh={refresh} />
         ) : (
-          <StudentCheckin data={state} api={api} action={action} />
+          <StudentCheckin data={state} api={api} action={action} loading={loading} />
         )
       )}
 

@@ -34,7 +34,11 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
         <DataList emptyText="No tasks currently assigned to your cohort.">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {data.tasks.map((task) => {
-              const duePassed = task.dueDate && new Date() > new Date(task.dueDate);
+              const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
+              if (dueDateObj) {
+                dueDateObj.setHours(23, 59, 59, 999);
+              }
+              const duePassed = dueDateObj && new Date() > dueDateObj;
               const submission = mySubmissions.find(sub => String(sub.task?._id || sub.task) === String(task._id));
               const hasSubmitted = !!submission;
               const status = submission?.status;

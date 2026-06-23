@@ -17,7 +17,7 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
     ? ((presentDays / totalDays) * 100).toFixed(1) 
     : '100.0';
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const todayRecord = records.find(r => r.date === todayStr);
   const todayStatus = todayRecord 
     ? (todayRecord.status === 'P' ? 'Present' : todayRecord.status === 'Ab' ? 'Absent' : 'Leave')

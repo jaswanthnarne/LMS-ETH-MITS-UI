@@ -58,73 +58,99 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
           </div>
 
           <DataList emptyText="No Leetcode problems assigned to your batch yet.">
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {problems.map((problem) => {
                 const submission = problem.submission;
                 const hasSubmitted = !!submission;
+                const status = submission?.status;
                 
+                let btnText = 'Submit Solution';
+                let isBtnDisabled = false;
+                if (status === 'accepted') {
+                  btnText = 'Submission Accepted';
+                  isBtnDisabled = true;
+                } else if (status === 'submitted') {
+                  btnText = 'Submitted';
+                  isBtnDisabled = true;
+                } else if (status === 'resubmit') {
+                  btnText = 'Resubmit Solution';
+                }
+
                 return (
                   <div 
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-bgPrimary border border-borderCool hover:border-primary/20 rounded-xl p-5 shadow-sm transition-colors" 
                     key={problem._id}
+                    className="bg-bgPrimary border border-borderCool rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-primary/20 transition-all shadow-sm"
                   >
-                    <div className="min-w-0 flex-1 flex flex-col gap-2">
-                      <h3 className="font-title text-sm font-semibold text-textPrimary">{problem.title}</h3>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-textMuted">
-                        <span className="flex items-center gap-1">
-                          <LinkIcon size={13} />
-                          <a 
-                            href={problem.url} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="text-primary hover:underline font-semibold"
-                          >
-                            LeetCode URL
-                          </a>
+                    <div className="min-w-0 flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase tracking-wider">
+                          {problem.batch ? `${problem.batch.name}` : 'Cohort'}
                         </span>
-                        {problem.dueDate && (
-                          <span className="flex items-center gap-1">
-                            <Calendar size={13} className="text-textMuted" /> Due: {new Date(problem.dueDate).toLocaleDateString()}
-                          </span>
-                        )}
+                        {status && <Badge value={status} />}
+                      </div>
+                      <strong className="font-title text-sm font-semibold text-textPrimary block truncate">
+                        {problem.title}
+                      </strong>
+                      <div className="flex items-center gap-1.5 text-xs text-textMuted mt-1">
+                        <LinkIcon size={12} />
+                        <a 
+                          href={problem.url} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-primary hover:underline font-semibold"
+                        >
+                          LeetCode Link ↗
+                        </a>
                       </div>
                     </div>
 
-                    <div className="w-full md:w-auto shrink-0 flex items-center justify-end">
-                      {!hasSubmitted ? (
-                        <button
-                          className="flex items-center gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
-                          onClick={() => setAttemptProblem(problem)}
+                    <div className="flex flex-col gap-3 mt-1 border-t border-borderCool/40 pt-3">
+                      <div className="flex items-center justify-between text-xs text-textSecondary font-medium">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} className="text-textMuted" /> 
+                          Due: {problem.dueDate ? new Date(problem.dueDate).toLocaleDateString() : 'Open'}
+                        </span>
+                      </div>
+
+                      {status === 'accepted' && (
+                        <div className="bg-bgSecondary border border-borderCool/60 rounded-lg p-2.5 text-xs flex flex-col gap-1">
+                          <div className="flex justify-between items-center text-textPrimary font-semibold">
+                            <span>Score</span>
+                            <span className="text-primary font-bold">{submission.score} pts</span>
+                          </div>
+                          {submission.feedback && (
+                            <p className="text-[11px] text-textSecondary italic mt-1 border-t border-borderCool/40 pt-1 leading-relaxed">
+                              "{submission.feedback}"
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {hasSubmitted && submission.submissionUrl && (
+                        <a 
+                          href={submission.submissionUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-[11px] text-primary font-semibold hover:underline block text-right"
                         >
-                          <Send size={13} /> Submit Solution
+                          View My Submission ↗
+                        </a>
+                      )}
+
+                      {!isBtnDisabled ? (
+                        <button
+                          onClick={() => setAttemptProblem(problem)}
+                          className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold rounded-lg shadow-sm bg-primary hover:bg-primary/95 text-white transition-all"
+                        >
+                          <Send size={12} />
+                          {btnText}
                         </button>
                       ) : (
-                        <div className="w-full md:w-[220px] bg-bgSecondary border border-borderCool rounded-lg p-3 text-xs flex flex-col gap-1.5 shadow-sm">
-                          <div className="flex justify-between items-center">
-                            <span className="text-[10px] text-textMuted font-bold uppercase tracking-wider">Status</span>
-                            <Badge value={submission.status} />
+                        status !== 'accepted' && (
+                          <div className="w-full text-center py-2.5 text-xs font-semibold rounded-lg bg-bgHover text-textMuted border border-borderCool">
+                            {btnText}
                           </div>
-                          
-                          {submission.status === 'accepted' && (
-                            <div className="bg-bgPrimary rounded p-2 border border-borderCool/60 mt-0.5">
-                              <strong className="text-textPrimary font-bold text-xs block">Grade: {submission.score} pts</strong>
-                              {submission.feedback && (
-                                <p className="text-[11px] text-textSecondary italic mt-1 leading-relaxed">
-                                  "{submission.feedback}"
-                                </p>
-                              )}
-                            </div>
-                          )}
-                          
-                          <a 
-                            href={submission.submissionUrl} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="text-[11px] text-primary font-semibold hover:underline block text-right mt-1"
-                          >
-                            View My Submission ↗
-                          </a>
-                        </div>
+                        )
                       )}
                     </div>
                   </div>

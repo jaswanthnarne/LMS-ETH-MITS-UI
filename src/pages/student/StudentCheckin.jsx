@@ -2,12 +2,15 @@ import React from 'react';
 import { Clock, CheckCircle, LogOut, Hourglass, Award, AlertCircle, Play } from 'lucide-react';
 import { Badge, SectionTitle } from '../../components/Shared';
 
-export default function StudentCheckin({ data, api, action }) {
+export default function StudentCheckin({ data, api, action, loading }) {
   const records = data.attendance || [];
   const currentAttendance = records[0] || null;
 
+  const [checkingIn, setCheckingIn] = React.useState(false);
+  const [checkingOut, setCheckingOut] = React.useState(false);
+
   // Find if today's check-in exists (date is today's string in local date)
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const todayRecord = records.find(r => r.date === todayStr);
   const hasCheckedInToday = !!(todayRecord && todayRecord.checkIn);
 
@@ -61,18 +64,28 @@ export default function StudentCheckin({ data, api, action }) {
           <button
             type="button"
             className="flex items-center gap-2 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-5 py-3 rounded-lg shadow-sm disabled:opacity-50 disabled:pointer-events-none"
-            onClick={() => action(() => api.post('/api/attendance/check-in', {}), 'Checked in successfully')}
-            disabled={hasCheckedInToday}
+            onClick={async () => {
+              setCheckingIn(true);
+              await action(() => api.post('/api/attendance/check-in', {}), 'Checked in successfully');
+              setCheckingIn(false);
+            }}
+            disabled={hasCheckedInToday || checkingIn || loading}
           >
-            <Play size={14} className="fill-white/20" /> Check In Session
+            <Play size={14} className="fill-white/20" /> 
+            {checkingIn ? 'Checking In...' : 'Check In Session'}
           </button>
           <button
             type="button"
             className="flex items-center gap-2 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-5 py-3 rounded-lg disabled:opacity-50 disabled:pointer-events-none"
-            onClick={() => action(() => api.post('/api/attendance/check-out', {}), 'Checked out successfully')}
-            disabled={!hasCheckedInToday || !!todayRecord.checkOut}
+            onClick={async () => {
+              setCheckingOut(true);
+              await action(() => api.post('/api/attendance/check-out', {}), 'Checked out successfully');
+              setCheckingOut(false);
+            }}
+            disabled={!hasCheckedInToday || !!todayRecord?.checkOut || checkingOut || loading}
           >
-            <LogOut size={14} /> Check Out Session
+            <LogOut size={14} /> 
+            {checkingOut ? 'Checking Out...' : 'Check Out Session'}
           </button>
         </div>
       </div>
