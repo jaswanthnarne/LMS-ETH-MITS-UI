@@ -554,6 +554,7 @@ function AppContent() {
     try {
       const me = await api.get('/api/auth/me');
       setUser(me);
+      setIsInitializing(false);
 
       const safeGet = async (path, defaultValue = []) => {
         try {
@@ -625,7 +626,7 @@ function AppContent() {
   async function action(fn, success) {
     try {
       const result = await fn();
-      await refresh('silent');
+      refresh('silent');
       if (success) addToast(success, 'success');
       return result;
     } catch (error) {

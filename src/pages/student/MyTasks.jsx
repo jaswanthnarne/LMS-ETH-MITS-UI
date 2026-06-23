@@ -35,7 +35,17 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {data.tasks.map((task) => {
               const duePassed = task.dueDate && new Date() > new Date(task.dueDate);
+              const submission = mySubmissions.find(sub => String(sub.task?._id || sub.task) === String(task._id));
+              const hasSubmitted = !!submission;
+              const status = submission?.status;
+              const isBtnDisabled = duePassed || (hasSubmitted && (status === 'submitted' || status === 'accepted'));
               
+              let btnText = 'Submit Solution';
+              if (duePassed) btnText = 'Due Date Passed';
+              else if (status === 'accepted') btnText = 'Submission Accepted';
+              else if (status === 'submitted') btnText = 'Submitted';
+              else if (status === 'resubmit') btnText = 'Resubmit Solution';
+
               return (
                 <div 
                   key={task._id}
@@ -77,19 +87,19 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
                     </div>
 
                     <button
-                      disabled={duePassed}
+                      disabled={isBtnDisabled}
                       onClick={() => {
                         setForm('submission', 'task', task._id);
                         setIsSubmitOpen(true);
                       }}
                       className={`w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold rounded-lg shadow-sm transition-all ${
-                        duePassed
+                        isBtnDisabled
                           ? 'bg-bgHover text-textMuted border border-borderCool cursor-not-allowed'
                           : 'bg-primary hover:bg-primary/95 text-white'
                       }`}
                     >
-                      <Send size={12} />
-                      {duePassed ? 'Due Date Passed' : 'Submit Solution'}
+                      {status === 'accepted' ? <CheckCircle size={12} /> : <Send size={12} />}
+                      {btnText}
                     </button>
                   </div>
                 </div>
@@ -198,7 +208,15 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
               name="task"
               value={forms.submission.task}
               onChange={(value) => setForm('submission', 'task', value)}
-              options={[['', 'Select Assigned Task'], ...data.tasks.map((task) => [task._id, task.title])]}
+              options={[
+                ['', 'Select Assigned Task'],
+                ...data.tasks
+                  .filter((task) => {
+                    const sub = mySubmissions.find((s) => String(s.task?._id || s.task) === String(task._id));
+                    return !sub || sub.status === 'resubmit';
+                  })
+                  .map((task) => [task._id, task.title])
+              ]}
               required
             />
           </div>
