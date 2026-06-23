@@ -1,9 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Code2, Plus, ListChecks, Award, Save, CheckSquare, Edit2, Trash2, X, Link, GraduationCap, Trophy } from 'lucide-react';
 import { SectionTitle, DataList, Row, Badge, Field, Select, Modal } from '../../components/Shared';
 
+function LeetcodeReviewRow({ sub, api, action, isSelected, onSelectToggle }) {
+  const [score, setScore] = useState(sub.score || 0);
+  const [status, setStatus] = useState(sub.status || 'submitted');
+  const [feedback, setFeedback] = useState(sub.feedback || '');
+
+  useEffect(() => {
+    setScore(sub.score || 0);
+    setStatus(sub.status || 'submitted');
+    setFeedback(sub.feedback || '');
+  }, [sub]);
+
+  return (
+    <div className="flex flex-col lg:flex-row justify-between gap-6 bg-bgPrimary border border-borderCool rounded-xl p-5 hover:border-primary/30 transition-all relative pl-12">
+      <div className="absolute left-4 top-6">
+        <input 
+          type="checkbox" 
+          checked={isSelected} 
+          onChange={onSelectToggle}
+          className="w-4 h-4 text-primary border-borderCool rounded focus:ring-primary cursor-pointer"
+        />
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <h3 className="font-title text-sm font-semibold text-textPrimary">{sub.problem?.title}</h3>
+        <small className="text-[11px] text-textMuted block">Submitted by {sub.student?.name}</small>
+        
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+            sub.status === 'accepted' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+          }`}>
+            Status: {sub.status || 'submitted'}
+          </span>
+          {sub.status === 'accepted' && (
+            <span className="text-[10px] font-bold text-textPrimary bg-bgSecondary border border-borderCool px-2 py-0.5 rounded-full">
+              Score Assigned: {sub.score || 0} / 10 pts
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2.5">
+          <a 
+            href={sub.submissionUrl} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-primary text-primary px-3.5 py-2 rounded-lg transition-colors"
+          >
+            <Link size={13} /> View LeetCode Solution URL
+          </a>
+        </div>
+        
+        {sub.feedback && (
+          <div className="bg-bgSecondary border border-borderCool/60 rounded-lg p-3 text-xs text-textSecondary italic mt-1 leading-relaxed">
+            <strong>Previous Feedback:</strong> "{sub.feedback}"
+          </div>
+        )}
+      </div>
+
+      <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-3 pt-4 lg:pt-0 lg:pl-5 border-t lg:border-t-0 lg:border-l border-borderCool/60">
+        <span className="text-[11px] font-bold text-textMuted uppercase tracking-wider block">Grading Panel</span>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <Field 
+            placeholder="Score" 
+            type="number" 
+            value={score} 
+            onChange={(val) => setScore(Number(val))} 
+          />
+          <div className="flex flex-col gap-1.5 justify-end">
+            <Select
+              value={status}
+              onChange={setStatus}
+              options={[['accepted', 'Accepted'], ['submitted', 'Submitted']]}
+            />
+          </div>
+        </div>
+        
+        <Field 
+          placeholder="Feedback remarks..." 
+          value={feedback} 
+          onChange={setFeedback} 
+        />
+        
+        <button
+          className="flex items-center justify-center gap-1.5 w-full text-center text-xs font-semibold bg-primary hover:bg-primary/95 text-white py-2.5 rounded-lg shadow-sm mt-1"
+          onClick={() => {
+            action(() => api.patch(`/api/leetcode/submissions/${sub._id}`, { score: Number(score), status, feedback }), 'Leetcode submission graded');
+          }}
+        >
+          <CheckSquare size={14} /> Save Review
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminLeetcode({ data, forms, setForm, api, action }) {
   const [tab, setTab] = useState('publish'); // publish | reviews | leaderboard
+  const [reviewFilter, setReviewFilter] = useState('pending'); // 'pending' | 'accepted'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProblemId, setEditingProblemId] = useState(null);
   const [batchFilter, setBatchFilter] = useState('');
@@ -14,9 +109,29 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
   const problems = data.leetcodeProblems || [];
   const submissions = data.leetcodeSubmissions || [];
 
+  const filteredProblems = problems.filter((problem) => {
+    if (!batchFilter) return true;
+    const problemBatchId = problem.batch?._id || problem.batch;
+    return String(problemBatchId) === String(batchFilter);
+  });
+
+  const filteredSubmissions = submissions.filter((sub) => {
+    if (!batchFilter) return true;
+    const subBatchId = sub.student?.batch?._id || sub.student?.batch || sub.problem?.batch?._id || sub.problem?.batch;
+    return String(subBatchId) === String(batchFilter);
+  });
+
+  const displaySubmissions = filteredSubmissions.filter(sub => {
+    if (reviewFilter === 'pending') {
+      return sub.status !== 'accepted';
+    } else {
+      return sub.status === 'accepted';
+    }
+  });
+
   const handleSelectAllLeetcode = (e) => {
     if (e.target.checked) {
-      setSelectedLeetcodeSubIds(filteredSubmissions.map(s => s._id));
+      setSelectedLeetcodeSubIds(displaySubmissions.map(s => s._id));
     } else {
       setSelectedLeetcodeSubIds([]);
     }
@@ -40,18 +155,6 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
     );
     setSelectedLeetcodeSubIds([]);
   };
-
-  const filteredProblems = problems.filter((problem) => {
-    if (!batchFilter) return true;
-    const problemBatchId = problem.batch?._id || problem.batch;
-    return String(problemBatchId) === String(batchFilter);
-  });
-
-  const filteredSubmissions = submissions.filter((sub) => {
-    if (!batchFilter) return true;
-    const subBatchId = sub.student?.batch?._id || sub.student?.batch || sub.problem?.batch?._id || sub.problem?.batch;
-    return String(subBatchId) === String(batchFilter);
-  });
 
   const filteredLeaderboard = records.filter((record) => {
     if (!batchFilter) return true;
@@ -131,9 +234,12 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
                 ? 'bg-primary text-white shadow-sm' 
                 : 'text-textMuted hover:text-textPrimary hover:bg-bgHover/50'
             }`} 
-            onClick={() => setTab('reviews')}
+            onClick={() => {
+              setTab('reviews');
+              setSelectedLeetcodeSubIds([]);
+            }}
           >
-            <ListChecks size={14} /> Submissions Queue ({filteredSubmissions.filter(s => s.status === 'submitted').length})
+            <ListChecks size={14} /> Submissions Queue ({filteredSubmissions.filter(s => s.status !== 'accepted').length})
           </button>
           <button 
             className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-all ${
@@ -238,17 +344,47 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
             </p>
           </div>
 
-          {filteredSubmissions.length > 0 && (
+          {/* Leetcode Review Queue Sub-tabs */}
+          <div className="flex gap-1.5 p-1 bg-bgPrimary border border-borderCool rounded-xl w-fit mb-5">
+            <button
+              onClick={() => {
+                setReviewFilter('pending');
+                setSelectedLeetcodeSubIds([]);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                reviewFilter === 'pending'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-textMuted hover:text-textPrimary hover:bg-bgHover/50'
+              }`}
+            >
+              Pending Review ({filteredSubmissions.filter(s => s.status !== 'accepted').length})
+            </button>
+            <button
+              onClick={() => {
+                setReviewFilter('accepted');
+                setSelectedLeetcodeSubIds([]);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                reviewFilter === 'accepted'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-textMuted hover:text-textPrimary hover:bg-bgHover/50'
+              }`}
+            >
+              Accepted / Graded ({filteredSubmissions.filter(s => s.status === 'accepted').length})
+            </button>
+          </div>
+
+          {displaySubmissions.length > 0 && (
             <div className="bg-bgPrimary border border-borderCool rounded-xl p-4 mb-4 flex flex-wrap items-center justify-between gap-4 text-xs">
               <div className="flex items-center gap-2">
                 <input 
                   type="checkbox" 
-                  checked={selectedLeetcodeSubIds.length === filteredSubmissions.length && filteredSubmissions.length > 0} 
+                  checked={selectedLeetcodeSubIds.length === displaySubmissions.length && displaySubmissions.length > 0} 
                   onChange={handleSelectAllLeetcode}
                   className="w-4 h-4 text-primary border-borderCool rounded focus:ring-primary cursor-pointer"
                 />
                 <span className="font-semibold text-textPrimary">
-                  {selectedLeetcodeSubIds.length} of {filteredSubmissions.length} selected
+                  {selectedLeetcodeSubIds.length} of {displaySubmissions.length} selected
                 </span>
               </div>
               
@@ -290,78 +426,17 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
             </div>
           )}
 
-          <DataList emptyText="No student solutions submitted for review.">
+          <DataList emptyText={`No student solutions match the '${reviewFilter}' queue.`}>
             <div className="grid grid-cols-1 gap-5">
-              {filteredSubmissions.map((sub) => (
-                <div 
-                  className="flex flex-col lg:flex-row justify-between gap-6 bg-bgPrimary border border-borderCool rounded-xl p-5 hover:border-primary/30 transition-all relative pl-12" 
+              {displaySubmissions.map((sub) => (
+                <LeetcodeReviewRow
                   key={sub._id}
-                >
-                  <div className="absolute left-4 top-6">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedLeetcodeSubIds.includes(sub._id)} 
-                      onChange={() => handleSelectOneLeetcode(sub._id)}
-                      className="w-4 h-4 text-primary border-borderCool rounded focus:ring-primary cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col gap-2">
-                    <h3 className="font-title text-sm font-semibold text-textPrimary">{sub.problem?.title}</h3>
-                    <small className="text-[11px] text-textMuted block">Submitted by {sub.student?.name}</small>
-                    
-                    <div className="mt-2">
-                      <a 
-                        href={sub.submissionUrl} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-primary text-primary px-3.5 py-2 rounded-lg transition-colors"
-                      >
-                        <Link size={13} /> View LeetCode Solution URL
-                      </a>
-                    </div>
-                    
-                    {sub.feedback && (
-                      <div className="bg-bgSecondary border border-borderCool/60 rounded-lg p-3 text-xs text-textSecondary italic mt-1 leading-relaxed">
-                        <strong>Previous Feedback:</strong> "{sub.feedback}"
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-3 pt-4 lg:pt-0 lg:pl-5 border-t lg:border-t-0 lg:border-l border-borderCool/60">
-                    <span className="text-[11px] font-bold text-textMuted uppercase tracking-wider block">Grading Panel</span>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <Field 
-                        placeholder="Score" 
-                        type="number" 
-                        value={forms.leetcodeReview.score} 
-                        onChange={(value) => setForm('leetcodeReview', 'score', Number(value))} 
-                      />
-                      <div className="flex flex-col gap-1.5 justify-end">
-                        <Select
-                          value={forms.leetcodeReview.status}
-                          onChange={(value) => setForm('leetcodeReview', 'status', value)}
-                          options={[['accepted', 'Accepted'], ['submitted', 'Submitted']]}
-                        />
-                      </div>
-                    </div>
-                    
-                    <Field 
-                      placeholder="Feedback remarks..." 
-                      value={forms.leetcodeReview.feedback} 
-                      onChange={(value) => setForm('leetcodeReview', 'feedback', value)} 
-                    />
-                    
-                    <button
-                      className="flex items-center justify-center gap-1.5 w-full text-center text-xs font-semibold bg-primary hover:bg-primary/95 text-white py-2.5 rounded-lg shadow-sm mt-1"
-                      onClick={() => {
-                        action(() => api.patch(`/api/leetcode/submissions/${sub._id}`, forms.leetcodeReview), 'Leetcode submission graded');
-                      }}
-                    >
-                      <CheckSquare size={14} /> Save Review
-                    </button>
-                  </div>
-                </div>
+                  sub={sub}
+                  api={api}
+                  action={action}
+                  isSelected={selectedLeetcodeSubIds.includes(sub._id)}
+                  onSelectToggle={() => handleSelectOneLeetcode(sub._id)}
+                />
               ))}
             </div>
           </DataList>
@@ -380,7 +455,6 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
           <DataList emptyText="No coding progress recorded.">
             <div className="grid grid-cols-1 gap-2">
               {filteredLeaderboard.map((record, index) => {
-                // Gold/Silver/Bronze colors for top 3
                 const rankColor = index === 0 
                   ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' 
                   : index === 1 
