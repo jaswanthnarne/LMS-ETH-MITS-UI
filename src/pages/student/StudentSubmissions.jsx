@@ -52,7 +52,7 @@ export default function StudentSubmissions({ data, api, action }) {
           <SectionTitle icon={BookOpen} title="Task Submissions Log" />
           
           <DataList emptyText="No task submissions found. Submit assignments via the Tasks page.">
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {taskSubmissions.map((sub) => {
                 const isCloudinary = sub.fileUrl && (sub.fileUrl.startsWith('http://') || sub.fileUrl.startsWith('https://'));
                 const fileUrl = isCloudinary 
@@ -168,7 +168,7 @@ export default function StudentSubmissions({ data, api, action }) {
           <SectionTitle icon={Code2} title="LeetCode Submissions Log" />
 
           <DataList emptyText="No LeetCode submissions found. Resolve problems via the LeetCode page.">
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {leetcodeSubmissions.map((sub) => {
                 return (
                   <div

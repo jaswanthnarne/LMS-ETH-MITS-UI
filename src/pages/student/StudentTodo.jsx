@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, BookOpen, Code2, CheckCircle, Circle, Plus, Trash2, Calendar, AlertTriangle, CheckSquare, Square, Info } from 'lucide-react';
+import { ClipboardCheck, BookOpen, Code2, CheckCircle, Circle, Plus, Trash2, Calendar, AlertTriangle, CheckSquare, Square, Info, X } from 'lucide-react';
 import { Field, Select, SectionTitle, DataList } from '../../components/Shared';
 
 export default function StudentTodo({ data, user }) {
@@ -10,6 +10,7 @@ export default function StudentTodo({ data, user }) {
   const [newTodoText, setNewTodoText] = useState('');
   const [newTodoPriority, setNewTodoPriority] = useState('medium'); // 'high' | 'medium' | 'low'
   const [filterPriority, setFilterPriority] = useState('all'); // 'all' | 'high' | 'medium' | 'low'
+  const [dateFilter, setDateFilter] = useState('');
 
   const storageKey = `mits_lms_todo_${user._id}`;
 
@@ -117,6 +118,13 @@ export default function StudentTodo({ data, user }) {
     return new Date(a.dueDate) - new Date(b.dueDate);
   });
 
+  const filteredAcademicTodos = allAcademicTodos.filter((todo) => {
+    if (!dateFilter) return true;
+    if (!todo.dueDate) return false;
+    const todoDateStr = new Date(todo.dueDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    return todoDateStr === dateFilter;
+  });
+
   // Filter personal todos
   const filteredPersonalTodos = todos.filter(todo => {
     if (filterPriority === 'all') return true;
@@ -166,13 +174,37 @@ export default function StudentTodo({ data, user }) {
         <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-borderCool/60">
             <SectionTitle icon={BookOpen} title="Auto-Synced Coursework Todos" />
-            <span className="text-xs font-bold text-textMuted bg-bgPrimary border border-borderCool px-3 py-1 rounded-lg">
-              Completed:{' '}
-              <span className="text-success font-black">
-                {allAcademicTodos.filter(t => t.completed).length}
-              </span>{' '}
-              / {allAcademicTodos.length}
-            </span>
+            <div className="flex items-center gap-3.5 flex-wrap">
+              <div className="flex items-center gap-2 bg-bgPrimary border border-borderCool px-3 py-1.5 rounded-lg shadow-sm">
+                <span className="text-xs font-semibold text-textMuted flex items-center gap-1.5 shrink-0">
+                  <Calendar size={13} /> Filter Date:
+                </span>
+                <div className="relative flex items-center">
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="bg-bgSecondary border border-borderCool text-textPrimary text-xs rounded px-2 py-1 outline-none cursor-pointer pr-7 font-semibold"
+                  />
+                  {dateFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setDateFilter('')}
+                      className="absolute right-1.5 text-textMuted hover:text-textPrimary p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <span className="text-xs font-bold text-textMuted bg-bgPrimary border border-borderCool px-3 py-1 rounded-lg">
+                Completed:{' '}
+                <span className="text-success font-black">
+                  {allAcademicTodos.filter(t => t.completed).length}
+                </span>{' '}
+                / {allAcademicTodos.length}
+              </span>
+            </div>
           </div>
 
           <p className="text-xs text-textMuted leading-relaxed flex items-start gap-1.5 bg-bgPrimary p-3.5 rounded-xl border border-borderCool/60 mb-2">
@@ -182,7 +214,7 @@ export default function StudentTodo({ data, user }) {
 
           <DataList emptyText="No assigned coursework or problems found. You're completely up to date!">
             <div className="flex flex-col gap-2.5">
-              {allAcademicTodos.map(todo => {
+              {filteredAcademicTodos.map(todo => {
                 const isOverdue = todo.dueDate && !todo.completed && new Date() > new Date(todo.dueDate);
 
                 return (

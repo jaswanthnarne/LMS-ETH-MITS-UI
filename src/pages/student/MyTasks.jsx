@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { BookOpen, Send, Calendar, Link2, FileUp, ClipboardCheck, Code, CheckCircle, Github, Globe, FileDown } from 'lucide-react';
+import { BookOpen, Send, Calendar, Link2, FileUp, ClipboardCheck, Code, CheckCircle, Github, Globe, FileDown, X } from 'lucide-react';
 import { Field, TextArea, Select, DataList, SectionTitle, Modal, Badge } from '../../components/Shared';
 
 export default function MyTasks({ data, forms, setForm, api, action }) {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState('');
 
   const mySubmissions = data.submissions || [];
+
+  const filteredTasks = data.tasks.filter((task) => {
+    if (!dateFilter) return true;
+    if (!task.dueDate) return false;
+    const taskDateStr = new Date(task.dueDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    return taskDateStr === dateFilter;
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -19,12 +27,36 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
             View assigned cohort tasks and track your submission review status.
           </p>
         </div>
-        <button 
-          onClick={() => setIsSubmitOpen(true)}
-          className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-lg shadow-sm shrink-0"
-        >
-          <Send size={14} /> Submit a Solution
-        </button>
+        <div className="flex items-center gap-3.5 flex-wrap">
+          <div className="flex items-center gap-2 bg-bgSecondary border border-borderCool px-3 py-1.5 rounded-lg shadow-sm">
+            <span className="text-xs font-semibold text-textMuted flex items-center gap-1.5 shrink-0">
+              <Calendar size={13} /> Filter Date:
+            </span>
+            <div className="relative flex items-center">
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="bg-bgPrimary border border-borderCool/80 text-textPrimary text-xs rounded px-2 py-1 outline-none cursor-pointer pr-7 font-semibold"
+              />
+              {dateFilter && (
+                <button
+                  type="button"
+                  onClick={() => setDateFilter('')}
+                  className="absolute right-1.5 text-textMuted hover:text-textPrimary p-0.5"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+          <button 
+            onClick={() => setIsSubmitOpen(true)}
+            className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-lg shadow-sm shrink-0"
+          >
+            <Send size={14} /> Submit a Solution
+          </button>
+        </div>
       </div>
 
       {/* Assigned Tasks Card Grid */}
@@ -33,7 +65,7 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
         
         <DataList emptyText="No tasks currently assigned to your cohort.">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
               if (dueDateObj) {
                 dueDateObj.setHours(23, 59, 59, 999);

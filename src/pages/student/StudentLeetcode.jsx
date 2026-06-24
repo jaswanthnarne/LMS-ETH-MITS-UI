@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
-import { Code2, BarChart3, Star, Flame, Send, Award, CheckCircle, Link as LinkIcon, Calendar, Trophy } from 'lucide-react';
+import { Code2, BarChart3, Star, Flame, Send, Award, CheckCircle, Link as LinkIcon, Calendar, Trophy, X } from 'lucide-react';
 import { Field, SectionTitle, DataList, Row, Badge, Modal } from '../../components/Shared';
 
 export default function StudentLeetcode({ user, data, forms, setForm, api, action }) {
   const [tab, setTab] = useState('challenges'); // challenges | profile | leaderboard
   const [attemptProblem, setAttemptProblem] = useState(null); // problem object
+  const [dateFilter, setDateFilter] = useState('');
 
   const [syncing, setSyncing] = useState(false);
 
   const record = data.leetcode; // student's linked profile
   const problems = data.leetcodeProblems || [];
   const leaderboard = data.leetcodeList || data.leetcode || []; // list of records
+
+  const filteredProblems = problems.filter((problem) => {
+    if (!dateFilter) return true;
+    if (!problem.dueDate) return false;
+    const probDateStr = new Date(problem.dueDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    return probDateStr === dateFilter;
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,16 +58,40 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
 
       {tab === 'challenges' && (
         <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
-          <div className="pb-5 mb-5 border-b border-borderCool">
-            <SectionTitle icon={Code2} title="Assigned Coding Challenges" />
-            <p className="text-xs text-textMuted mt-1">
-              Attempt coding problems on Leetcode and submit your solution link.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-borderCool">
+            <div>
+              <SectionTitle icon={Code2} title="Assigned Coding Challenges" />
+              <p className="text-xs text-textMuted mt-1">
+                Attempt coding problems on Leetcode and submit your solution link.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-bgPrimary border border-borderCool px-3 py-1.5 rounded-lg shadow-sm">
+              <span className="text-xs font-semibold text-textMuted flex items-center gap-1.5 shrink-0">
+                <Calendar size={13} /> Filter Date:
+              </span>
+              <div className="relative flex items-center">
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="bg-bgSecondary border border-borderCool text-textPrimary text-xs rounded px-2 py-1 outline-none cursor-pointer pr-7 font-semibold"
+                />
+                {dateFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setDateFilter('')}
+                    className="absolute right-1.5 text-textMuted hover:text-textPrimary p-0.5"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <DataList emptyText="No Leetcode problems assigned to your batch yet.">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {problems.map((problem) => {
+              {filteredProblems.map((problem) => {
                 const submission = problem.submission;
                 const hasSubmitted = !!submission;
                 const status = submission?.status;
