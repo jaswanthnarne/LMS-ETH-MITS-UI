@@ -1,15 +1,65 @@
 import React from 'react';
-import { Clock, RefreshCw, RotateCcw, ClipboardCheck, Award } from 'lucide-react';
-import { Badge, Field, Select, SectionTitle } from '../../components/Shared';
+import { Clock, RefreshCw, RotateCcw, ClipboardCheck, Award, Edit3 } from 'lucide-react';
+import { Badge, Field, Select, SectionTitle, Modal } from '../../components/Shared';
 
 export default function AdminCheckinLogs({ data, forms, setForm, api, action, refresh }) {
   const records = data.attendance || [];
   const selectedBatchId = forms.filters.batch;
 
+  const [editingStudent, setEditingStudent] = React.useState(null);
+  const [editForm, setEditForm] = React.useState({
+    status: 'Ab',
+    checkInTime: '',
+    checkOutTime: ''
+  });
+
   function calculatePoints(hours) {
     if (!hours || hours < 3) return 0;
     if (hours >= 7.5) return 10;
     return Math.round(((hours - 3) / 4.5) * 10);
+  }
+
+  function formatTimeForInput(dateVal) {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  function handleOpenEditModal(student, record) {
+    setEditingStudent(student);
+    setEditForm({
+      status: record.status || 'Ab',
+      checkInTime: formatTimeForInput(record.checkIn),
+      checkOutTime: formatTimeForInput(record.checkOut)
+    });
+  }
+
+  const combineDateAndTime = (dateStr, timeStr) => {
+    if (!timeStr) return null;
+    const dateObj = new Date(`${dateStr}T${timeStr}:00`);
+    return dateObj.toISOString();
+  };
+
+  async function handleSaveEdit(event) {
+    event.preventDefault();
+    if (!editingStudent) return;
+
+    const payload = {
+      studentId: editingStudent._id,
+      date: forms.filters.date,
+      status: editForm.status,
+      checkIn: combineDateAndTime(forms.filters.date, editForm.checkInTime),
+      checkOut: combineDateAndTime(forms.filters.date, editForm.checkOutTime)
+    };
+
+    await action(
+      () => api.post('/api/attendance/edit', payload),
+      `Attendance updated successfully for ${editingStudent.name}`
+    );
+    setEditingStudent(null);
+    refresh();
   }
 
   async function handleResetCheckin(studentId) {
@@ -86,8 +136,8 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
                   <span className="col-span-4">Student Profile</span>
                   <span className="col-span-2">Checked In</span>
                   <span className="col-span-2">Checked Out</span>
-                  <span className="col-span-2">Total Duration</span>
-                  <span className="col-span-2 text-right pr-6">Check-in Points</span>
+                  <span className="col-span-2">Duration & Points</span>
+                  <span className="col-span-2 text-right pr-6">Actions</span>
                 </div>
                 
                 {/* Table Body */}
@@ -127,37 +177,41 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
                           {record.checkOut ? new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (record.checkIn ? 'Active Session' : '—')}
                         </span>
 
-                        {/* Duration & Reset action */}
-                        <div className="col-span-2 flex flex-col items-start justify-center min-w-0">
+                        {/* Duration & Points Column */}
+                        <div className="col-span-2 flex flex-col justify-center min-w-0">
                           {record.checkIn ? (
                             <>
                               <strong className="text-sm font-bold text-textPrimary">
                                 {record.totalHours ? `${record.totalHours.toFixed(2)} hrs` : 'Active'}
                               </strong>
-                              <button
-                                type="button"
-                                className="flex items-center gap-1 mt-1 text-[10px] font-bold text-danger hover:underline shrink-0"
-                                onClick={() => handleResetCheckin(studentId)}
-                              >
-                                <RotateCcw size={10} /> Reset
-                              </button>
+                              <span className="text-[10px] text-primary font-semibold mt-0.5">
+                                Points: {calculatePoints(record.totalHours)} / 10
+                              </span>
                             </>
                           ) : (
                             <span className="text-xs text-textMuted font-medium italic">No log</span>
                           )}
                         </div>
 
-                        {/* Points Selector */}
-                        <div className="col-span-2 flex justify-end items-center pr-2 gap-1.5 shrink-0">
-                          {record.checkIn ? (
-                            <>
-                              <Award size={14} className="text-primary" />
-                              <strong className="text-sm font-bold text-primary">
-                                {calculatePoints(record.totalHours)} / 10
-                              </strong>
-                            </>
-                          ) : (
-                            <span className="text-xs text-textMuted font-semibold">0 / 10</span>
+                        {/* Actions Column */}
+                        <div className="col-span-2 flex justify-end items-center pr-2 gap-2.5 shrink-0">
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-lg text-textMuted hover:text-primary hover:bg-primary/5 transition-colors"
+                            onClick={() => handleOpenEditModal(student, record)}
+                            title="Edit Attendance & Session logs"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          {record.checkIn && (
+                            <button
+                              type="button"
+                              className="p-1.5 rounded-lg text-textMuted hover:text-danger hover:bg-danger/5 transition-colors"
+                              onClick={() => handleResetCheckin(studentId)}
+                              title="Reset Check-in logs"
+                            >
+                              <RotateCcw size={14} />
+                            </button>
                           )}
                         </div>
                       </div>
@@ -169,6 +223,63 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
           </div>
         )}
       </div>
+
+      {/* Edit Attendance Modal */}
+      <Modal
+        isOpen={!!editingStudent}
+        onClose={() => setEditingStudent(null)}
+        title={`Edit Attendance: ${editingStudent?.name || ''}`}
+      >
+        {editingStudent && (
+          <form className="flex flex-col gap-4" onSubmit={handleSaveEdit}>
+            <div className="text-xs text-textMuted">
+              Editing attendance logs for <strong className="text-textPrimary">{editingStudent.name}</strong> on <strong className="text-textPrimary">{forms.filters.date}</strong>.
+            </div>
+
+            <Select
+              label="Attendance Status"
+              value={editForm.status}
+              onChange={(val) => setEditForm(prev => ({ ...prev, status: val }))}
+              options={[
+                ['P', 'Present (P)'],
+                ['Ab', 'Absent (Ab)'],
+                ['L', 'Leave (L)']
+              ]}
+              required
+            />
+
+            <Field
+              label="Check-in Time (Local IST)"
+              type="time"
+              value={editForm.checkInTime}
+              onChange={(val) => setEditForm(prev => ({ ...prev, checkInTime: val }))}
+            />
+
+            <Field
+              label="Check-out Time (Local IST)"
+              type="time"
+              value={editForm.checkOutTime}
+              onChange={(val) => setEditForm(prev => ({ ...prev, checkOutTime: val }))}
+            />
+
+            <div className="flex gap-3 mt-2">
+              <button
+                type="submit"
+                className="flex-1 bg-primary text-white text-xs font-semibold py-2.5 rounded-lg hover:bg-primary/95 transition-all"
+              >
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingStudent(null)}
+                className="flex-1 bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary text-xs font-semibold py-2.5 rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }
