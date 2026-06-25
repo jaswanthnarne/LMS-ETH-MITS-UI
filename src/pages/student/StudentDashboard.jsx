@@ -23,6 +23,12 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
     ? (todayRecord.status === 'P' ? 'Present' : todayRecord.status === 'Ab' ? 'Absent' : 'Leave')
     : 'Not Marked';
 
+  const submittedTaskIds = new Set(
+    (data.submissions || [])
+      .filter(s => s.status !== 'resubmit')
+      .map(s => String(s.task?._id || s.task))
+  );
+
   useEffect(() => {
     async function loadStats() {
       try {
@@ -166,12 +172,18 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
                       title={task.title} 
                       meta={`Due by: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}`}
                     >
-                      <button 
-                        className="text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-3 py-1.5 rounded-lg"
-                        onClick={() => go('tasks')}
-                      >
-                        Submit Work
-                      </button>
+                      {submittedTaskIds.has(String(task._id)) ? (
+                        <span className="text-[10px] font-bold px-2.5 py-1 bg-success/15 text-success rounded-full border border-success/10 uppercase tracking-wider">
+                          Submitted
+                        </span>
+                      ) : (
+                        <button 
+                          className="text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-3 py-1.5 rounded-lg"
+                          onClick={() => go('tasks')}
+                        >
+                          Submit Work
+                        </button>
+                      )}
                     </Row>
                   ))}
                 </div>

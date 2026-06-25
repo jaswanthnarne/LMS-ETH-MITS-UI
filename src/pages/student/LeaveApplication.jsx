@@ -4,6 +4,7 @@ import { Field, TextArea, Select, DataList, SectionTitle, Badge, Modal } from '.
 
 export default function LeaveApplication({ data, forms, setForm, api, action }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLeaveId, setEditingLeaveId] = useState(null);
 
   function startLeaveApplication() {
     setForm('leave', 'type', 'single-day');
@@ -11,6 +12,20 @@ export default function LeaveApplication({ data, forms, setForm, api, action }) 
     setForm('leave', 'toDate', '');
     setForm('leave', 'hours', 1);
     setForm('leave', 'reason', '');
+    setEditingLeaveId(null);
+    setIsModalOpen(true);
+  }
+
+  function startLeaveEdit(leave) {
+    const fromDateStr = leave.fromDate ? new Date(leave.fromDate).toISOString().slice(0, 10) : '';
+    const toDateStr = leave.toDate ? new Date(leave.toDate).toISOString().slice(0, 10) : '';
+    
+    setForm('leave', 'type', leave.type || 'single-day');
+    setForm('leave', 'fromDate', fromDateStr);
+    setForm('leave', 'toDate', toDateStr);
+    setForm('leave', 'hours', leave.hours || 1);
+    setForm('leave', 'reason', leave.reason || '');
+    setEditingLeaveId(leave._id);
     setIsModalOpen(true);
   }
 
@@ -54,17 +69,26 @@ export default function LeaveApplication({ data, forms, setForm, api, action }) 
                 <div className="flex items-center gap-3 shrink-0">
                   <Badge value={leave.status} />
                   {leave.status === 'pending' && (
-                    <button
-                      className="text-xs font-semibold text-danger hover:underline"
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to cancel this leave request?')) {
-                          action(() => api.delete(`/api/leave/${leave._id}`), 'Leave request cancelled successfully');
-                        }
-                      }}
-                      title="Cancel Request"
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="text-xs font-semibold text-primary hover:underline"
+                        onClick={() => startLeaveEdit(leave)}
+                        title="Edit Request"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-xs font-semibold text-danger hover:underline"
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to cancel this leave request?')) {
+                            action(() => api.delete(`/api/leave/${leave._id}`), 'Leave request cancelled successfully');
+                          }
+                        }}
+                        title="Cancel Request"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -73,12 +97,16 @@ export default function LeaveApplication({ data, forms, setForm, api, action }) 
         </DataList>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Request Leave / Time Off">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingLeaveId ? 'Edit Leave Request' : 'Request Leave / Time Off'}>
         <form
           className="flex flex-col gap-4"
           onSubmit={(event) => {
             event.preventDefault();
-            action(() => api.post('/api/leave', forms.leave), 'Leave application submitted successfully');
+            if (editingLeaveId) {
+              action(() => api.patch(`/api/leave/${editingLeaveId}`, forms.leave), 'Leave request updated successfully');
+            } else {
+              action(() => api.post('/api/leave', forms.leave), 'Leave application submitted successfully');
+            }
             setIsModalOpen(false);
           }}
         >
@@ -109,7 +137,7 @@ export default function LeaveApplication({ data, forms, setForm, api, action }) 
           <TextArea placeholder="Provide a detailed explanation for your leave request..." value={forms.leave.reason} onChange={(value) => setForm('leave', 'reason', value)} required />
           
           <button className="flex items-center justify-center gap-2 w-full text-center text-sm font-semibold bg-primary hover:bg-primary/95 text-white py-2.5 rounded-lg shadow-sm">
-            <Send size={16} /> Submit Application
+            <Send size={16} /> {editingLeaveId ? 'Save Changes' : 'Submit Application'}
           </button>
         </form>
       </Modal>

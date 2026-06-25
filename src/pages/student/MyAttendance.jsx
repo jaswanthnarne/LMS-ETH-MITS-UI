@@ -8,7 +8,22 @@ export default function MyAttendance({ data }) {
   // Calculate statistics
   const presentDays = records.filter(r => r.status === 'P').length;
   const absentDays = records.filter(r => r.status === 'Ab').length;
-  const leaveDays = records.filter(r => r.status === 'L').length;
+  
+  // Calculate approved leave days directly from leaves data
+  const leavesList = data.leaves || [];
+  const approvedLeaves = leavesList.filter(l => l.status === 'approved');
+  const leaveDays = approvedLeaves.reduce((acc, l) => {
+    if (l.type === 'hourly') return acc;
+    if (l.type === 'single-day') return acc + 1;
+    const start = new Date(l.fromDate);
+    const end = new Date(l.toDate || l.fromDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const diffTime = end.getTime() - start.getTime();
+    const days = diffTime >= 0 ? Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1 : 0;
+    return acc + days;
+  }, 0);
+
   const totalDays = records.length;
   
   // Attendance percentage = present / total (or present + leave / total)

@@ -30,6 +30,7 @@ import LiveQuizPlayer from './pages/student/LiveQuizPlayer';
 import StudentLeetcode from './pages/student/StudentLeetcode';
 import StudentSubmissions from './pages/student/StudentSubmissions';
 import StudentTodo from './pages/student/StudentTodo';
+import MyMarks from './pages/student/MyMarks';
 
 // Import Chat
 import BatchChat from './pages/chat/BatchChat';
@@ -484,6 +485,7 @@ function AppContent() {
   const [user, setUser] = useState(null);
   const [isInitializing, setIsInitializing] = useState(!!localStorage.getItem('mits_lms_token'));
   const [showPassword, setShowPassword] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const prefix = user?.role === 'admin' ? '/admin/root/console' : '';
   let rawPath = location.pathname;
@@ -492,9 +494,17 @@ function AppContent() {
   }
   const path = rawPath.replace(/^\/+/, '') || 'dashboard';
 
-  const validPaths = ['dashboard', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile', 'submissions', 'todo'];
+  const validPaths = ['dashboard', 'marks', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile', 'submissions', 'todo'];
   const isNotFound = location.pathname !== '/' && !validPaths.includes(path);
   const active = path;
+
+  const activeRef = useRef(active);
+  useEffect(() => {
+    activeRef.current = active;
+    if (active === 'chat') {
+      setUnreadChatCount(0);
+    }
+  }, [active]);
 
   const setActive = (newActive) => navigate(`${prefix}/${newActive}`);
 
@@ -626,6 +636,9 @@ function AppContent() {
         if (exists) return current;
         return { ...current, messages: [...current.messages, message] };
       });
+      if (activeRef.current !== 'chat' && String(message.sender?._id || message.sender) !== String(user?._id)) {
+        setUnreadChatCount((prev) => prev + 1);
+      }
     });
 
     socket.on('delete-message', (payload) => {
@@ -906,7 +919,7 @@ function AppContent() {
   }
 
   return (
-    <Layout user={user} active={active} setActive={setActive} refresh={refresh} logout={logout} loading={loading} colleges={state.colleges} api={api} action={action} data={state}>
+    <Layout user={user} active={active} setActive={setActive} refresh={refresh} logout={logout} loading={loading} colleges={state.colleges} api={api} action={action} data={state} unreadChatCount={unreadChatCount}>
       {notice && <Notice text={notice} />}
       
       {active === 'dashboard' && (
@@ -923,6 +936,10 @@ function AppContent() {
         ) : (
           <MyAttendance data={state} api={api} action={action} />
         )
+      )}
+
+      {active === 'marks' && user.role === 'student' && (
+        <MyMarks data={state} user={user} api={api} />
       )}
 
       {active === 'checkin' && (

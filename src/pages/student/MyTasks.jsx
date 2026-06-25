@@ -89,9 +89,16 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
                 >
                   <div className="min-w-0 flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase tracking-wider">
-                        {task.batch ? `${task.batch.name}` : 'Cohort'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase tracking-wider">
+                          {task.batch ? `${task.batch.name}` : 'Cohort'}
+                        </span>
+                        {hasSubmitted && status !== 'resubmit' && (
+                          <span className="text-[9px] font-bold bg-success/15 text-success px-2 py-0.5 rounded border border-success/10 uppercase tracking-wider">
+                            Submission Done
+                          </span>
+                        )}
+                      </div>
                       <strong className="text-textPrimary text-xs bg-bgSecondary border border-borderCool px-2 py-0.5 rounded">
                         {task.maxScore} pts
                       </strong>
@@ -141,86 +148,6 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
                 </div>
               );
             })}
-          </div>
-        </DataList>
-      </div>
-
-      {/* Submission History Cards (Full Width) */}
-      <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm flex flex-col gap-4">
-        <SectionTitle icon={ClipboardCheck} title="My Submissions History" />
-        
-        <DataList emptyText="You haven't submitted any solutions yet. Click 'Submit a Solution' to get started.">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mySubmissions.map((sub) => (
-              <div 
-                key={sub._id}
-                className="bg-bgPrimary border border-borderCool rounded-xl p-5 flex flex-col gap-3.5 hover:border-primary/20 transition-all shadow-sm"
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="min-w-0">
-                    <strong className="font-title text-sm font-semibold text-textPrimary block truncate">{sub.task?.title || 'Unknown Task'}</strong>
-                    <span className="text-[10px] text-textMuted font-medium block mt-0.5">
-                      Submitted: {new Date(sub.updatedAt || sub.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <Badge value={sub.status || 'submitted'} />
-                </div>
-
-                {/* Submission Links */}
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {sub.githubUrl && (
-                    <a 
-                      href={sub.githubUrl} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="inline-flex items-center gap-1 text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-textSecondary text-textPrimary px-2.5 py-1 rounded-lg"
-                    >
-                      <Github size={12} className="text-textSecondary" /> Repo
-                    </a>
-                  )}
-                  {sub.liveUrl && (
-                    <a 
-                      href={sub.liveUrl} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="inline-flex items-center gap-1 text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-textSecondary text-textPrimary px-2.5 py-1 rounded-lg"
-                    >
-                      <Globe size={12} className="text-textSecondary" /> Demo
-                    </a>
-                  )}
-                  {sub.fileUrl && (
-                    <a 
-                      href={`${api.getUri ? api.getUri() : 'http://127.0.0.1:5000'}/${sub.fileUrl}`} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="inline-flex items-center gap-1 text-xs font-semibold bg-bgSecondary border border-borderCool hover:border-textSecondary text-textPrimary px-2.5 py-1 rounded-lg"
-                    >
-                      <FileDown size={12} className="text-textSecondary" /> Attachment
-                    </a>
-                  )}
-                </div>
-
-                {sub.status === 'accepted' && (
-                  <div className="bg-bgSecondary border border-borderCool/60 rounded-lg p-3 text-xs flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-textPrimary font-semibold">
-                      <span>Grade Score</span>
-                      <span className="text-primary font-bold">{sub.score} / {sub.task?.maxScore || 100} pts</span>
-                    </div>
-                    {sub.feedback && (
-                      <p className="text-[11px] text-textSecondary italic mt-1 border-t border-borderCool/40 pt-1.5 leading-relaxed">
-                        <strong>Feedback:</strong> "{sub.feedback}"
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {sub.status === 'resubmit' && (
-                  <div className="bg-danger/5 border border-danger/10 text-danger-text rounded-lg p-3 text-xs leading-relaxed">
-                    <strong>Resubmit Requested:</strong> {sub.feedback || 'Please review and resubmit your solution.'}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </DataList>
       </div>

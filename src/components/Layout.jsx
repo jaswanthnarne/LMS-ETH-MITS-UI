@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import {
   LayoutDashboard, CalendarCheck, ClipboardList, Users, BookOpen,
   ClipboardCheck, PlayCircle, Code2, MessageSquare, RefreshCw,
-  LogOut, Search, Bell, Sun, Moon, Menu, X, User, Trophy, Clock
+  LogOut, Search, Bell, Sun, Moon, Menu, X, User, Trophy, Clock, Award
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Field, Modal } from './Shared';
-export default function Layout({ user, active, setActive, refresh, logout, children, loading, colleges = [], api, action, data = {} }) {
+export default function Layout({ user, active, setActive, refresh, logout, children, loading, colleges = [], api, action, data = {}, unreadChatCount = 0 }) {
   const adminNav = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'attendance', icon: CalendarCheck, label: 'Take Attendance' },
@@ -24,6 +24,7 @@ export default function Layout({ user, active, setActive, refresh, logout, child
 
   const studentNav = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'marks', icon: Award, label: 'My Marks' },
     { id: 'todo', icon: ClipboardList, label: 'My Todo' },
     { id: 'attendance', icon: CalendarCheck, label: 'Attendance' },
     { id: 'checkin', icon: Clock, label: 'Daily Check-in' },
@@ -194,10 +195,17 @@ export default function Layout({ user, active, setActive, refresh, logout, child
                 key={item.id}
                 to={`${prefix}/${item.id}`}
                 onClick={() => { setDrawerOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${sel ? 'bg-primary text-white' : 'text-textSecondary hover:bg-bgHover hover:text-textPrimary'}`}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${sel ? 'bg-primary text-white' : 'text-textSecondary hover:bg-bgHover hover:text-textPrimary'}`}
               >
-                <Icon size={17} />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon size={17} />
+                  <span>{item.label}</span>
+                </div>
+                {item.id === 'chat' && unreadChatCount > 0 && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 transition-all ${sel ? 'bg-white text-primary' : 'bg-primary text-white animate-pulse'}`}>
+                    {unreadChatCount}
+                  </span>
+                )}
               </Link>
             );
           })}

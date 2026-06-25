@@ -10,7 +10,8 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
   const [editForm, setEditForm] = React.useState({
     status: 'Ab',
     checkInTime: '',
-    checkOutTime: ''
+    checkOutTime: '',
+    id: ''
   });
 
   function calculatePoints(hours) {
@@ -32,7 +33,8 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
     setEditForm({
       status: record.status || 'Ab',
       checkInTime: formatTimeForInput(record.checkIn),
-      checkOutTime: formatTimeForInput(record.checkOut)
+      checkOutTime: formatTimeForInput(record.checkOut),
+      id: record._id || ''
     });
   }
 
@@ -57,6 +59,18 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
     await action(
       () => api.post('/api/attendance/edit', payload),
       `Attendance updated successfully for ${editingStudent.name}`
+    );
+    setEditingStudent(null);
+    refresh();
+  }
+
+  async function handleDeleteRecord() {
+    if (!editForm.id) return;
+    if (!window.confirm("Are you sure you want to completely delete this attendance record?")) return;
+
+    await action(
+      () => api.delete(`/api/attendance/${editForm.id}`),
+      `Attendance record deleted successfully`
     );
     setEditingStudent(null);
     refresh();
@@ -262,20 +276,31 @@ export default function AdminCheckinLogs({ data, forms, setForm, api, action, re
               onChange={(val) => setEditForm(prev => ({ ...prev, checkOutTime: val }))}
             />
 
-            <div className="flex gap-3 mt-2">
-              <button
-                type="submit"
-                className="flex-1 bg-primary text-white text-xs font-semibold py-2.5 rounded-lg hover:bg-primary/95 transition-all"
-              >
-                Save Changes
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditingStudent(null)}
-                className="flex-1 bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary text-xs font-semibold py-2.5 rounded-lg transition-all"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-3 mt-2">
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-primary text-white text-xs font-semibold py-2.5 rounded-lg hover:bg-primary/95 transition-all"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(null)}
+                  className="flex-1 bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary text-xs font-semibold py-2.5 rounded-lg transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+              {editForm.id && (
+                <button
+                  type="button"
+                  onClick={handleDeleteRecord}
+                  className="w-full bg-danger/10 border border-danger/25 hover:bg-danger text-danger hover:text-white text-xs font-semibold py-2.5 rounded-lg transition-all"
+                >
+                  Delete Attendance Record
+                </button>
+              )}
             </div>
           </form>
         )}
