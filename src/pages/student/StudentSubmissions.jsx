@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { BookOpen, Code2, ClipboardCheck, Calendar, Github, Globe, FileDown, MessageSquare, Award, AlertCircle } from 'lucide-react';
+import { BookOpen, Code2, ClipboardCheck, Calendar, Github, Globe, FileDown, MessageSquare, Award, AlertCircle, X } from 'lucide-react';
 import { Badge, SectionTitle, DataList } from '../../components/Shared';
 
 export default function StudentSubmissions({ data, api, action }) {
   const [activeTab, setActiveTab] = useState('tasks'); // 'tasks' | 'leetcode'
   const [expandedCards, setExpandedCards] = useState({});
+  const [filterDate, setFilterDate] = useState('');
 
   const toggleCard = (id) => {
     setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
@@ -12,6 +13,18 @@ export default function StudentSubmissions({ data, api, action }) {
 
   const taskSubmissions = data.submissions || [];
   const leetcodeSubmissions = data.leetcodeSubmissions || [];
+
+  const getLocalDateString = (dateObj) => {
+    return new Date(dateObj).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  };
+
+  const filteredTaskSubmissions = filterDate 
+    ? taskSubmissions.filter(s => getLocalDateString(s.updatedAt || s.createdAt) === filterDate)
+    : taskSubmissions;
+
+  const filteredLeetcodeSubmissions = filterDate 
+    ? leetcodeSubmissions.filter(s => getLocalDateString(s.createdAt) === filterDate)
+    : leetcodeSubmissions;
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,6 +38,28 @@ export default function StudentSubmissions({ data, api, action }) {
             Track and review your submitted tasks and resolved coding challenges.
           </p>
         </div>
+
+        {/* Date Filter */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-bgSecondary border border-borderCool rounded-lg px-3 py-1.5 focus-within:border-primary transition-all">
+            <Calendar size={14} className="text-textMuted mr-2" />
+            <input 
+              type="date" 
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="bg-transparent border-none outline-none text-xs font-semibold text-textPrimary cursor-pointer"
+            />
+            {filterDate && (
+              <button 
+                onClick={() => setFilterDate('')} 
+                className="ml-2 text-textMuted hover:text-textPrimary p-0.5"
+                title="Clear Filter"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Tabs Navigation */}
@@ -37,7 +72,7 @@ export default function StudentSubmissions({ data, api, action }) {
               : 'text-textMuted hover:text-textPrimary hover:bg-bgHover/50'
           }`}
         >
-          <BookOpen size={14} /> Task Submissions ({taskSubmissions.length})
+          <BookOpen size={14} /> Task Submissions ({filteredTaskSubmissions.length})
         </button>
         <button
           onClick={() => setActiveTab('leetcode')}
@@ -47,7 +82,7 @@ export default function StudentSubmissions({ data, api, action }) {
               : 'text-textMuted hover:text-textPrimary hover:bg-bgHover/50'
           }`}
         >
-          <Code2 size={14} /> LeetCode Submissions ({leetcodeSubmissions.length})
+          <Code2 size={14} /> LeetCode Submissions ({filteredLeetcodeSubmissions.length})
         </button>
       </div>
 
@@ -58,7 +93,7 @@ export default function StudentSubmissions({ data, api, action }) {
           
           <DataList emptyText="No task submissions found. Submit assignments via the Tasks page.">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {taskSubmissions.map((sub) => {
+              {filteredTaskSubmissions.map((sub) => {
                 const isCloudinary = sub.fileUrl && (sub.fileUrl.startsWith('http://') || sub.fileUrl.startsWith('https://'));
                 const fileUrl = isCloudinary 
                   ? sub.fileUrl 
@@ -185,7 +220,7 @@ export default function StudentSubmissions({ data, api, action }) {
 
           <DataList emptyText="No LeetCode submissions found. Resolve problems via the LeetCode page.">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {leetcodeSubmissions.map((sub) => {
+              {filteredLeetcodeSubmissions.map((sub) => {
                 const isExpanded = !!expandedCards[sub._id];
                 return (
                   <div

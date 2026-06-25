@@ -934,12 +934,16 @@ function AppContent() {
         user.role === 'admin' ? (
           <AttendanceLogs data={state} forms={forms} setForm={setForm} api={api} action={action} refresh={refresh} />
         ) : (
-          <MyAttendance data={state} api={api} action={action} />
+          <Navigate to="/marks" replace />
         )
       )}
 
-      {active === 'marks' && user.role === 'student' && (
-        <MyMarks data={state} user={user} api={api} />
+      {active === 'marks' && (
+        user.role === 'admin' ? (
+          <Leaderboard user={user} data={state} forms={forms} setForm={setForm} api={api} action={action} />
+        ) : (
+          <MyMarks data={state} user={user} api={api} forms={forms} setForm={setForm} action={action} />
+        )
       )}
 
       {active === 'checkin' && (
@@ -954,7 +958,7 @@ function AppContent() {
         user.role === 'admin' ? (
           <LeaveRequests data={state} api={api} action={action} />
         ) : (
-          <LeaveApplication data={state} forms={forms} setForm={setForm} api={api} action={action} />
+          <Navigate to="/marks" replace />
         )
       )}
 

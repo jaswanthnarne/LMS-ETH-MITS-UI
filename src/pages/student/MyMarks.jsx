@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Calendar, Trophy, CheckCircle, Clock, BookOpen, Flame, TrendingUp, ChevronRight } from 'lucide-react';
+import { Award, Calendar, Trophy, CheckCircle, Clock, BookOpen, Flame, TrendingUp, ChevronRight, ClipboardList } from 'lucide-react';
 import { SectionTitle, DataList } from '../../components/Shared';
+import MyAttendance from './MyAttendance';
+import LeaveApplication from './LeaveApplication';
 
-export default function MyMarks({ data, user, api }) {
+export default function MyMarks({ data, user, api, forms, setForm, action }) {
+  const [subTab, setSubTab] = useState('marks');
   const [tab, setTab] = useState('daily'); // daily | weekly | monthly
   const [leaderboardStats, setLeaderboardStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -139,7 +142,43 @@ export default function MyMarks({ data, user, api }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Overview Cards */}
+      {/* Sub-tabs Navigation */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-bgSecondary border border-borderCool rounded-2xl w-fit">
+        <button
+          onClick={() => setSubTab('marks')}
+          className={`flex items-center gap-2 text-xs font-bold px-5 py-3 rounded-xl transition-all ${
+            subTab === 'marks'
+              ? 'bg-primary text-white shadow-md'
+              : 'text-textSecondary hover:text-textPrimary hover:bg-bgHover'
+          }`}
+        >
+          <Award size={15} /> Marks Dashboard
+        </button>
+        <button
+          onClick={() => setSubTab('attendance')}
+          className={`flex items-center gap-2 text-xs font-bold px-5 py-3 rounded-xl transition-all ${
+            subTab === 'attendance'
+              ? 'bg-primary text-white shadow-md'
+              : 'text-textSecondary hover:text-textPrimary hover:bg-bgHover'
+          }`}
+        >
+          <Clock size={15} /> Attendance Logs
+        </button>
+        <button
+          onClick={() => setSubTab('leaves')}
+          className={`flex items-center gap-2 text-xs font-bold px-5 py-3 rounded-xl transition-all ${
+            subTab === 'leaves'
+              ? 'bg-primary text-white shadow-md'
+              : 'text-textSecondary hover:text-textPrimary hover:bg-bgHover'
+          }`}
+        >
+          <ClipboardList size={15} /> Leave Applications
+        </button>
+      </div>
+
+      {subTab === 'marks' && (
+        <div className="flex flex-col gap-6">
+          {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Overall Points Card */}
         <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm flex items-center gap-4">
@@ -355,6 +394,16 @@ export default function MyMarks({ data, user, api }) {
           </DataList>
         )}
       </div>
+      </div>
+      )}
+
+      {subTab === 'attendance' && (
+        <MyAttendance data={data} />
+      )}
+
+      {subTab === 'leaves' && (
+        <LeaveApplication data={data} forms={forms} setForm={setForm} api={api} action={action} />
+      )}
     </div>
   );
 }

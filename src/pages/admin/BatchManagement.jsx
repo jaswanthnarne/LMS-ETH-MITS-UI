@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Plus, Award, ArrowLeft, Upload, UserPlus, List, Edit2, Trash2, Save, X, Key, GraduationCap, Eye, Briefcase, BookOpen } from 'lucide-react';
 import { Field, TextArea, Select, DataList, SectionTitle, Modal } from '../../components/Shared';
 
@@ -10,6 +10,33 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
   const [importNotice, setImportNotice] = useState('');
   const [defaultPassword, setDefaultPassword] = useState('mits@3!');
   const [validatedStudents, setValidatedStudents] = useState([]);
+  const [leaderboardStats, setLeaderboardStats] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+  useEffect(() => {
+    async function loadLeaderboard() {
+      if (!selectedBatchId) {
+        setLeaderboardStats([]);
+        return;
+      }
+      setLoadingLeaderboard(true);
+      try {
+        const res = await api.get(`/api/analytics/leaderboard?batchId=${selectedBatchId}`);
+        if (res && res.leaderboard) {
+          setLeaderboardStats(res.leaderboard);
+        }
+      } catch (err) {
+        console.error('Error fetching leaderboard inside BatchManagement:', err);
+      } finally {
+        setLoadingLeaderboard(false);
+      }
+    }
+    loadLeaderboard();
+  }, [selectedBatchId, api]);
+
+  const selectedStudentStats = selectedStudentForView
+    ? leaderboardStats.find(x => String(x.student?._id) === String(selectedStudentForView._id))
+    : null;
   
   // Modals Open State
   const [isCreateBatchOpen, setIsCreateBatchOpen] = useState(false);
@@ -276,10 +303,11 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
               <div className="min-w-[750px] divide-y divide-borderCool">
                 {/* Table Header */}
                 <div className="grid grid-cols-12 gap-4 px-5 py-3.5 bg-bgPrimary text-xs font-bold text-textMuted uppercase tracking-wider">
-                  <span className="col-span-3">Name</span>
-                  <span className="col-span-4">Email</span>
+                  <span className="col-span-2">Name</span>
+                  <span className="col-span-3">Email</span>
                   <span className="col-span-2">Roll Number</span>
-                  <span className="col-span-2">Phone</span>
+                  <span className="col-span-2">Overall Score</span>
+                  <span className="col-span-2">Present Days</span>
                   <span className="col-span-1 text-right">Actions</span>
                 </div>
                 
@@ -289,40 +317,59 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
                     No students enrolled in this batch yet. Click "+ Add Student" or "Bulk Import" to start.
                   </div>
                 ) : (
-                  selectedBatch.students.map((student) => (
-                    <div 
-                      key={student._id} 
-                      className="grid grid-cols-12 gap-4 px-5 py-3.5 items-center hover:bg-bgHover/40 transition-colors"
-                    >
-                      <strong className="col-span-3 text-sm font-semibold text-textPrimary truncate">{student.name}</strong>
-                      <span className="col-span-4 text-sm text-textSecondary truncate">{student.email}</span>
-                      <span className="col-span-2 text-sm text-textSecondary">{student.rollNumber || '-'}</span>
-                      <span className="col-span-2 text-sm text-textSecondary">{student.phone || '-'}</span>
-                      <div className="col-span-1 flex items-center justify-end gap-3">
-                        <button
-                          className="p-1 rounded-lg text-textMuted hover:text-primary hover:bg-primary/5 transition-colors"
-                          onClick={() => setSelectedStudentForView(student)}
-                          title="View Student Profile Details"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
-                          className="p-1 rounded-lg text-primary hover:bg-primary/5 transition-colors"
-                          onClick={() => handleResetPassword(student._id, student.name)}
-                          title="Reset Student Password"
-                        >
-                          <Key size={14} />
-                        </button>
-                        <button
-                          className="p-1 rounded-lg text-danger hover:bg-danger/5 transition-colors"
-                          onClick={() => handleRemoveStudent(student._id, student.name)}
-                          title="Remove Student from Batch"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                  selectedBatch.students.map((student) => {
+                    const stats = leaderboardStats.find(x => String(x.student?._id) === String(student._id));
+                    const score = stats ? stats.overallScore : 0;
+                    const presentDays = stats ? (stats.attendanceMarks / 10) : 0;
+
+                    return (
+                      <div 
+                        key={student._id} 
+                        className="grid grid-cols-12 gap-4 px-5 py-3.5 items-center hover:bg-bgHover/40 transition-colors"
+                      >
+                        <strong className="col-span-2 text-sm font-semibold text-textPrimary truncate">{student.name}</strong>
+                        <span className="col-span-3 text-sm text-textSecondary truncate">{student.email}</span>
+                        <span className="col-span-2 text-sm text-textSecondary font-mono">{student.rollNumber || '-'}</span>
+                        <span className="col-span-2 text-sm font-bold text-primary">
+                          {loadingLeaderboard ? (
+                            <span className="inline-block w-8 h-4 bg-borderCool/60 animate-pulse rounded" />
+                          ) : (
+                            `${score} pts`
+                          )}
+                        </span>
+                        <span className="col-span-2 text-sm font-bold text-success">
+                          {loadingLeaderboard ? (
+                            <span className="inline-block w-8 h-4 bg-borderCool/60 animate-pulse rounded" />
+                          ) : (
+                            `${presentDays} days`
+                          )}
+                        </span>
+                        <div className="col-span-1 flex items-center justify-end gap-3">
+                          <button
+                            className="p-1 rounded-lg text-textMuted hover:text-primary hover:bg-primary/5 transition-colors"
+                            onClick={() => setSelectedStudentForView(student)}
+                            title="View Student Profile Details"
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
+                            className="p-1 rounded-lg text-primary hover:bg-primary/5 transition-colors"
+                            onClick={() => handleResetPassword(student._id, student.name)}
+                            title="Reset Student Password"
+                          >
+                            <Key size={14} />
+                          </button>
+                          <button
+                            className="p-1 rounded-lg text-danger hover:bg-danger/5 transition-colors"
+                            onClick={() => handleRemoveStudent(student._id, student.name)}
+                            title="Remove Student from Batch"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -537,6 +584,36 @@ export default function BatchManagement({ data, forms, setForm, api, action }) {
       >
         {selectedStudentForView && (
           <div className="flex flex-col gap-5 text-sm max-h-[75vh] overflow-y-auto pr-1">
+            {/* Score & Streak Summary Cards */}
+            {selectedStudentStats && (
+              <div className="bg-bgPrimary border border-borderCool rounded-xl p-4">
+                <h4 className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider mb-3">
+                  <Award size={15} /> Attendance & Score Dashboard
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-1">
+                  <div className="bg-bgSecondary border border-borderCool/60 p-2.5 rounded-lg text-center flex flex-col justify-center">
+                    <span className="text-textMuted block mb-0.5 font-medium">Overall Score</span>
+                    <strong className="text-lg font-black text-primary">{selectedStudentStats.overallScore} pts</strong>
+                  </div>
+                  <div className="bg-bgSecondary border border-borderCool/60 p-2.5 rounded-lg text-center flex flex-col justify-center">
+                    <span className="text-textMuted block mb-0.5 font-medium">LeetCode Score</span>
+                    <strong className="text-sm font-bold text-textPrimary">{selectedStudentStats.leetcodeScore} pts</strong>
+                    <span className="text-[10px] text-warning font-semibold">({selectedStudentStats.leetcodeStreak}d streak)</span>
+                  </div>
+                  <div className="bg-bgSecondary border border-borderCool/60 p-2.5 rounded-lg text-center flex flex-col justify-center">
+                    <span className="text-textMuted block mb-0.5 font-medium">Task Score</span>
+                    <strong className="text-sm font-bold text-textPrimary">{selectedStudentStats.taskScore} pts</strong>
+                    <span className="text-[10px] text-warning font-semibold">({selectedStudentStats.taskStreak}d streak)</span>
+                  </div>
+                  <div className="bg-bgSecondary border border-borderCool/60 p-2.5 rounded-lg text-center flex flex-col justify-center">
+                    <span className="text-textMuted block mb-0.5 font-medium">Attendance & Check-in</span>
+                    <strong className="text-sm font-bold text-textPrimary">{selectedStudentStats.attendanceMarks + selectedStudentStats.checkInMarks} pts</strong>
+                    <span className="text-[10px] text-success font-semibold">({selectedStudentStats.attendanceMarks / 10} days P)</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Academic Details */}
             <div className="bg-bgPrimary border border-borderCool rounded-xl p-4">
               <h4 className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider mb-3">

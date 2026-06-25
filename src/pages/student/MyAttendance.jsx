@@ -151,6 +151,48 @@ export default function MyAttendance({ data }) {
           </div>
         </div>
       </div>
+
+      {/* Approved Leaves List */}
+      <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
+        <div className="pb-5 mb-5 border-b border-borderCool">
+          <SectionTitle icon={Bookmark} title="My Approved Leaves" />
+          <p className="text-xs text-textMuted mt-1">
+            Details of leave requests that have been approved by the administrators.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          {approvedLeaves.length === 0 ? (
+            <div className="text-center py-8 text-sm text-textMuted bg-bgPrimary border border-borderCool rounded-lg">
+              No approved leaves found.
+            </div>
+          ) : (
+            approvedLeaves.map((leave) => (
+              <div 
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-bgPrimary border border-borderCool rounded-xl px-5 py-4 hover:border-primary/20 transition-colors"
+                key={leave._id}
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-textPrimary block truncate">
+                    {leave.type === 'hourly' ? `Hourly Leave (${leave.hours} hrs)` : `${leave.type === 'single-day' ? 'Single Day' : 'Multi-day'} Leave`}
+                  </span>
+                  <small className="text-[11px] text-textMuted block mt-1 leading-normal">
+                    <strong>Duration:</strong> {new Date(leave.fromDate).toLocaleDateString()} 
+                    {leave.toDate ? ` to ${new Date(leave.toDate).toLocaleDateString()}` : ''}
+                    <span className="mx-2 font-light">|</span>
+                    <strong>Reason:</strong> "{leave.reason}"
+                  </small>
+                </div>
+                <div className="shrink-0">
+                  <span className="text-[10px] font-bold px-3 py-1 bg-success/15 text-success rounded-full border border-success/10 uppercase tracking-wider">
+                    Approved
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -18,17 +18,16 @@ export default function Layout({ user, active, setActive, refresh, logout, child
     { id: 'quizzes', icon: PlayCircle, label: 'Exams & Quizzes' },
     { id: 'leetcode', icon: Code2, label: 'Leetcode Tracker' },
     { id: 'leaderboard', icon: Trophy, label: 'Overall Leaderboard' },
+    { id: 'marks', icon: Award, label: 'Marks Tracker' },
     { id: 'chat', icon: MessageSquare, label: 'Batch Chat' },
     { id: 'profile', icon: User, label: 'My Profile' }
   ];
 
   const studentNav = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'marks', icon: Award, label: 'My Marks' },
+    { id: 'marks', icon: Award, label: 'My Marks & Attendance' },
     { id: 'todo', icon: ClipboardList, label: 'My Todo' },
-    { id: 'attendance', icon: CalendarCheck, label: 'Attendance' },
     { id: 'checkin', icon: Clock, label: 'Daily Check-in' },
-    { id: 'leaves', icon: ClipboardList, label: 'Apply Leave' },
     { id: 'tasks', icon: BookOpen, label: 'My Tasks' },
     { id: 'submissions', icon: ClipboardCheck, label: 'My Submissions' },
     { id: 'quizzes', icon: PlayCircle, label: 'My Quizzes' },
@@ -44,6 +43,7 @@ export default function Layout({ user, active, setActive, refresh, logout, child
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '', phone: user?.phone || '', rollNumber: user?.rollNumber || '',
     leetcodeUsername: user?.leetcodeUsername || '', githubUrl: user?.githubUrl || '', linkedinUrl: user?.linkedinUrl || ''
@@ -240,9 +240,55 @@ export default function Layout({ user, active, setActive, refresh, logout, child
             <button className="lg:hidden p-2 rounded-lg text-textMuted hover:bg-bgHover" onClick={() => setDrawerOpen(true)}>
               <Menu size={18} />
             </button>
-            <div className="hidden md:flex items-center bg-bgPrimary border border-borderCool rounded-lg px-3 py-1.5 w-72 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light transition-all">
-              <Search size={16} className="text-textMuted mr-2 shrink-0" />
-              <input type="text" placeholder="Search..." className="w-full bg-transparent border-none outline-none text-sm text-textPrimary placeholder:text-textMuted/50" />
+            <div className="hidden md:flex items-center relative">
+              <div className="flex items-center bg-bgPrimary border border-borderCool rounded-lg px-3 py-1.5 w-72 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light transition-all">
+                <Search size={16} className="text-textMuted mr-2 shrink-0" />
+                <input 
+                  type="text" 
+                  placeholder="Search pages..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-sm text-textPrimary placeholder:text-textMuted/50" 
+                />
+                {searchQuery && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchQuery('')} 
+                    className="text-textMuted hover:text-textPrimary p-0.5"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              
+              {searchQuery.trim() && (
+                <div className="absolute top-full left-0 mt-1 w-72 bg-bgSecondary border border-borderCool rounded-xl shadow-xl z-50 py-2 divide-y divide-borderCool/40">
+                  {navItems.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                    <div className="px-4 py-3 text-center text-xs text-textMuted font-medium">
+                      No matching pages found
+                    </div>
+                  ) : (
+                    navItems
+                      .filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(item => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setActive(item.id);
+                              setSearchQuery('');
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-bgHover text-left text-xs font-semibold text-textPrimary transition-colors"
+                          >
+                            <Icon size={14} className="text-textMuted" />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
