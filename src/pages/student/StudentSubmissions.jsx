@@ -114,7 +114,7 @@ export default function StudentSubmissions({ data, api, action }) {
                         </h3>
                         <span className="flex items-center gap-1 text-[10px] text-textMuted font-medium mt-1">
                           <Calendar size={11} />
-                          Submitted: {new Date(sub.updatedAt || sub.createdAt).toLocaleString()}
+                          Submitted (IST): {new Date(sub.updatedAt || sub.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -159,6 +159,28 @@ export default function StudentSubmissions({ data, api, action }) {
                               <FileDown size={13} className="text-textSecondary" /> Attachment File
                             </a>
                           )}
+                        </div>
+
+                        {/* Assignment comparison metrics */}
+                        <div className="flex flex-col gap-2 bg-bgSecondary border border-borderCool/60 rounded-lg p-3 text-xs text-textSecondary">
+                          <div className="flex justify-between items-center">
+                            <span>Posted Time (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {sub.task?.createdAt ? new Date(sub.task.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Due Date (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {sub.task?.dueDate ? new Date(sub.task.dueDate).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'Open'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Submitted At (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {new Date(sub.updatedAt || sub.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Student Notes */}
@@ -236,7 +258,7 @@ export default function StudentSubmissions({ data, api, action }) {
                         </h3>
                         <span className="flex items-center gap-1 text-[10px] text-textMuted font-medium mt-1">
                           <Calendar size={11} />
-                          Submitted: {new Date(sub.createdAt).toLocaleString()}
+                          Submitted (IST): {new Date(sub.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -259,6 +281,28 @@ export default function StudentSubmissions({ data, api, action }) {
                           >
                             <Globe size={13} /> View Submission Link ↗
                           </a>
+                        </div>
+
+                        {/* Challenge comparison metrics */}
+                        <div className="flex flex-col gap-2 bg-bgSecondary border border-borderCool/60 rounded-lg p-3 text-xs text-textSecondary">
+                          <div className="flex justify-between items-center">
+                            <span>Posted Time (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {sub.problem?.createdAt ? new Date(sub.problem.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Due Date (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {sub.problem?.dueDate ? new Date(sub.problem.dueDate).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'Open'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Submitted At (IST):</span>
+                            <span className="font-semibold text-textPrimary">
+                              {new Date(sub.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Scores and feedback */}

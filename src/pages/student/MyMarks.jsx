@@ -44,8 +44,13 @@ export default function MyMarks({ data, user, api, forms, setForm, action }) {
       if (a.status === 'P') {
         daily[date].attendance = 10;
       }
-      if (a.checkIn && a.checkOut && (a.totalHours || 0) >= 8) {
-        daily[date].checkin = 10;
+      if (a.checkIn && a.checkOut) {
+        const hours = a.totalHours || 0;
+        if (hours >= 7.5) {
+          daily[date].checkin = 10;
+        } else if (hours >= 3) {
+          daily[date].checkin = Math.round(((hours - 3) / 4.5) * 10);
+        }
       }
     });
 
