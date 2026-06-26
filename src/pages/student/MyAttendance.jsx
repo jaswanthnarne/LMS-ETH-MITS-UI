@@ -24,11 +24,10 @@ export default function MyAttendance({ data }) {
     return acc + days;
   }, 0);
 
-  const totalDays = records.length;
-  
   // Attendance percentage = present / total (or present + leave / total)
   // Let's use present / total for direct percentage, and display it beautifully
   const markedCount = records.filter(r => ['P', 'present', 'L', 'leave', 'Ab', 'absent'].includes(r.status)).length;
+  const totalDays = markedCount;
   const attendancePercentage = markedCount > 0 
     ? ((presentDays / markedCount) * 100).toFixed(1) 
     : '100.0';
