@@ -19,7 +19,7 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
       records.forEach((item) => {
         const studentId = item.student?._id;
         // Default unmarked ('') students to 'Ab' when taking attendance
-        const status = item.attendance?.status || 'Ab';
+        const status = item.status || 'Ab';
         initial[studentId] = status;
       });
       setEditRecords(initial);
@@ -29,7 +29,7 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
       records.forEach((item) => {
         const studentId = item.student?._id;
         // Preserve unmarked ('') students as-is when editing attendance
-        const status = item.attendance?.status || '';
+        const status = item.status || '';
         initial[studentId] = status;
       });
       setEditRecords(initial);

@@ -113,8 +113,8 @@ export default function Leaderboard({ user, data, forms, setForm, api, action })
                   <tr className="bg-bgPrimary border-b border-borderCool text-xs font-bold text-textMuted uppercase tracking-wider">
                     <th className="px-5 py-3.5 w-20">Rank</th>
                     <th className="px-5 py-3.5">Student Profile</th>
-                    <th className="px-5 py-3.5 text-center">Leetcode Streak</th>
-                    <th className="px-5 py-3.5 text-center">Task Streak</th>
+                    <th className="px-5 py-3.5 text-center">LC Streak Pts</th>
+                    <th className="px-5 py-3.5 text-center">Task Streak Pts</th>
                     <th className="px-5 py-3.5 text-center">Attendance Pts</th>
                     <th className="px-5 py-3.5 text-center">Check-in Pts</th>
                     <th className="px-5 py-3.5 text-center">Task Pts</th>
@@ -170,27 +170,29 @@ export default function Leaderboard({ user, data, forms, setForm, api, action })
                             </div>
                           </td>
 
-                          {/* Leetcode Streak */}
-                          <td className="px-5 py-3.5 text-center font-semibold text-xs text-textPrimary">
-                            {row.leetcodeStreak > 0 ? (
-                              <span className="inline-flex items-center gap-0.5 text-warning font-bold">
-                                <Flame size={13} className="fill-warning/10" /> {row.leetcodeStreak} days
-                              </span>
-                            ) : (
-                              <span className="text-textMuted/60">—</span>
-                            )}
-                          </td>
-
-                          {/* Task Streak */}
-                          <td className="px-5 py-3.5 text-center font-semibold text-xs text-textPrimary">
-                            {row.taskStreak > 0 ? (
-                              <span className="inline-flex items-center gap-0.5 text-primary font-bold">
-                                <Award size={13} /> {row.taskStreak} tasks
-                              </span>
-                            ) : (
-                              <span className="text-textMuted/60">—</span>
-                            )}
-                          </td>
+                           {/* Leetcode Streak Pts */}
+                           <td className="px-5 py-3.5 text-center font-semibold text-xs text-textSecondary">
+                             <div className="flex flex-col items-center">
+                               <span className="font-bold text-textPrimary">{row.leetcodeStreak * 5} pts</span>
+                               {row.leetcodeStreak > 0 && (
+                                 <span className="text-[10px] text-warning font-bold mt-0.5 flex items-center gap-0.5">
+                                   <Flame size={10} className="fill-warning/10" /> {row.leetcodeStreak} days
+                                 </span>
+                               )}
+                             </div>
+                           </td>
+ 
+                           {/* Task Streak Pts */}
+                           <td className="px-5 py-3.5 text-center font-semibold text-xs text-textSecondary">
+                             <div className="flex flex-col items-center">
+                               <span className="font-bold text-textPrimary">{row.taskStreak * 5} pts</span>
+                               {row.taskStreak > 0 && (
+                                 <span className="text-[10px] text-primary font-bold mt-0.5 flex items-center gap-0.5">
+                                   <Award size={10} /> {row.taskStreak} tasks
+                                 </span>
+                               )}
+                             </div>
+                           </td>
 
                           {/* Attendance Marks */}
                           <td className="px-5 py-3.5 text-center text-xs font-medium text-textSecondary">
