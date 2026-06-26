@@ -95,120 +95,184 @@ function DonutChart({ easy, medium, hard, totalSolved }) {
 }
 
 // ─── Submission Heatmap ───────────────────────────────────────────────────────
-function SubmissionHeatmap({ submissionCalendar, totalActiveDays, maxStreak, totalCount }) {
+// Uses platform LMS submissions directly — green = submitted a problem on our platform
+function SubmissionHeatmap({ platformSubmissions }) {
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Build a date-keyed map of submission counts (IST dates)
   const calData = React.useMemo(() => {
-    try { return JSON.parse(submissionCalendar || '{}'); } catch { return {}; }
-  }, [submissionCalendar]);
+    const map = {};
+    (platformSubmissions || []).forEach(sub => {
+      if (!sub.createdAt) return;
+      const d = new Date(sub.createdAt);
+      // Convert to IST (UTC+5:30)
+      const istStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
+      map[istStr] = (map[istStr] || 0) + 1;
+    });
+    return map;
+  }, [platformSubmissions]);
 
-  // Build 52-week grid anchored from June 20, 2026 (platform launch date) to today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Build day list: June 20, 2026 → today (IST)
+  const PLATFORM_START = '2026-06-20';
+  const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
-  // Platform started June 20, 2026 — start the grid from the Sunday on or before that date
-  const PLATFORM_START = new Date('2026-06-20T00:00:00');
-  const startDate = new Date(PLATFORM_START);
-  // Rewind to previous Sunday so weeks align properly
-  startDate.setDate(startDate.getDate() - startDate.getDay());
-
-  const weeks = [];
-  let cursor = new Date(startDate);
-
-  while (cursor <= today) {
-    const week = [];
-    for (let d = 0; d < 7; d++) {
-      const ts = Math.floor(cursor.getTime() / 1000);
-      const count = calData[String(ts)] || 0;
-      week.push({ date: new Date(cursor), count });
+  const days = React.useMemo(() => {
+    const list = [];
+    const cursor = new Date(PLATFORM_START + 'T00:00:00');
+    const end    = new Date(todayIST   + 'T00:00:00');
+    while (cursor <= end) {
+      const key = cursor.toLocaleDateString('en-CA');
+      list.push({ date: new Date(cursor), key, count: calData[key] || 0 });
       cursor.setDate(cursor.getDate() + 1);
     }
-    weeks.push(week);
+    return list;
+  }, [calData, todayIST]);
+
+  // Group days into week-rows of 7
+  const weeks = React.useMemo(() => {
+    const out = [];
+    for (let i = 0; i < days.length; i += 7) out.push(days.slice(i, i + 7));
+    return out;
+  }, [days]);
+
+  const totalSubmissions = Object.values(calData).reduce((a, b) => a + b, 0);
+  const activeDays       = Object.keys(calData).length;
+
+  const CELL_W = 38;
+  const CELL_H = 38;
+  const GAP    = 4;
+
+  function cellBg(count) {
+    if (count === 0) return { bg: 'transparent', border: 'rgba(148,163,184,0.15)', text: '#64748b' };
+    if (count === 1) return { bg: 'rgba(22,163,74,0.30)', border: 'rgba(34,197,94,0.40)',  text: '#86efac' };
+    if (count <= 3)  return { bg: 'rgba(22,163,74,0.55)', border: 'rgba(34,197,94,0.60)',  text: '#4ade80' };
+    if (count <= 6)  return { bg: 'rgba(22,163,74,0.80)', border: 'rgba(34,197,94,0.80)',  text: '#22c55e' };
+    return               { bg: '#16a34a',                  border: '#15803d',               text: '#dcfce7' };
   }
 
-  // Month labels: collect month name at first day of each month within the grid
-  const monthLabels = [];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  weeks.forEach((week, wIdx) => {
-    const firstDay = week[0].date;
-    if (firstDay.getDate() <= 7) {
-      monthLabels.push({ wIdx, label: MONTHS[firstDay.getMonth()] });
-    }
-  });
-
-  function cellColor(count) {
-    if (count === 0) return 'bg-bgHover border border-borderCool/30';
-    if (count === 1) return 'bg-green-400/30 border border-green-400/20';
-    if (count <= 3)  return 'bg-green-500/50 border border-green-500/30';
-    if (count <= 6)  return 'bg-green-500/75 border border-green-500/50';
-    return 'bg-green-500 border border-green-600/60';
-  }
-
-  const CELL = 13; // px per cell
-  const GAP  = 2;  // px gap
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Stats row */}
+    <div className="flex flex-col gap-4">
+      {/* Stats bar */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <span className="text-xs font-semibold text-textMuted">
-          <strong className="text-textPrimary">{totalCount || 0}</strong> submissions in the past one year
+          <strong className="text-textPrimary">{totalSubmissions}</strong> platform submissions since Jun 20
         </span>
-        <div className="flex items-center gap-4 text-[11px] font-semibold text-textMuted">
-          <span>Total active days: <strong className="text-textPrimary">{totalActiveDays || 0}</strong></span>
-          <span>Max streak: <strong className="text-textPrimary">{maxStreak || 0}</strong></span>
-        </div>
+        <span className="text-[11px] font-semibold text-textMuted">
+          Active days: <strong className="text-textPrimary">{activeDays}</strong>
+        </span>
       </div>
 
-      {/* Calendar grid */}
-      <div className="overflow-x-auto">
-        <div style={{ position: 'relative', paddingBottom: 20 }}>
-          {/* Month labels */}
-          <div style={{ display: 'flex', position: 'absolute', bottom: 0, left: 0 }}>
-            {monthLabels.map(({ wIdx, label }) => (
-              <span
-                key={`${wIdx}-${label}`}
-                style={{
-                  position: 'absolute',
-                  left: wIdx * (CELL + GAP),
-                  fontSize: 10,
-                  color: 'var(--text-muted, #888)',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {label}
-              </span>
+      {/* Grid: rows = weeks, columns = days (Sun→Sat) */}
+      <div className="overflow-x-auto pb-1">
+        <div style={{ display: 'inline-flex', flexDirection: 'column', gap: GAP }}>
+
+          {/* Day-of-week header */}
+          <div style={{ display: 'flex', gap: GAP }}>
+            {DOW.map(d => (
+              <div key={d} style={{
+                width: CELL_W, textAlign: 'center',
+                fontSize: 9, fontWeight: 700,
+                color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase'
+              }}>{d}</div>
             ))}
           </div>
 
-          {/* Week columns */}
-          <div style={{ display: 'flex', gap: GAP }}>
-            {weeks.map((week, wIdx) => (
-              <div key={wIdx} style={{ display: 'flex', flexDirection: 'column', gap: GAP }}>
-                {week.map((day, dIdx) => (
-                  <div
-                    key={dIdx}
+          {/* Week rows */}
+          {weeks.map((week, wIdx) => (
+            <div key={wIdx} style={{ display: 'flex', gap: GAP }}>
+              {week.map((day, dIdx) => {
+                const c = cellBg(day.count);
+                const dayNum   = day.date.getDate();
+                const monthStr = MONTHS[day.date.getMonth()];
+                // Show "Jun" on the 1st of a month OR the very first cell
+                const label = (dayNum === 1 || (wIdx === 0 && dIdx === 0))
+                  ? monthStr
+                  : String(dayNum);
+
+                return (
+                  <div key={dIdx}
                     title={`${day.date.toDateString()}: ${day.count} submission${day.count !== 1 ? 's' : ''}`}
-                    className={`rounded-sm transition-all hover:scale-110 cursor-default ${cellColor(day.count)}`}
-                    style={{ width: CELL, height: CELL }}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+                    style={{
+                      width: CELL_W,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                      cursor: 'default'
+                    }}
+                  >
+                    {/* Cell */}
+                    <div style={{
+                      width: CELL_W - 2,
+                      height: CELL_H - 2,
+                      borderRadius: 8,
+                      background: c.bg,
+                      border: `1.5px solid ${c.border}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.12s, box-shadow 0.12s',
+                      boxShadow: day.count > 0 ? '0 0 0 0px rgba(34,197,94,0.3)' : 'none'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.12)';
+                      if (day.count > 0) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.25)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    >
+                      {day.count > 0 && (
+                        <span style={{ fontSize: 10, fontWeight: 800, color: c.text }}>
+                          {day.count}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Date label below cell */}
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: dayNum === 1 ? 700 : 600,
+                      color: day.count > 0 ? '#4ade80' : '#475569',
+                      letterSpacing: '0.02em',
+                      lineHeight: 1
+                    }}>
+                      {label}
+                    </span>
+                  </div>
+                );
+              })}
+              {/* Pad incomplete last week with empty slots */}
+              {week.length < 7 && Array.from({ length: 7 - week.length }).map((_, i) => (
+                <div key={`pad-${i}`} style={{ width: CELL_W }} />
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-1.5 text-[10px] text-textMuted font-medium ml-auto">
-        <span>Less</span>
-        {[0,1,3,5,8].map(v => (
-          <div key={v} className={`w-3 h-3 rounded-sm ${cellColor(v)}`} />
-        ))}
-        <span>More</span>
+      <div className="flex items-center gap-2 text-[10px] text-textMuted font-semibold ml-auto">
+        <span>No submissions</span>
+        {[0, 1, 3, 5, 8].map(v => {
+          const c = cellBg(v);
+          return (
+            <div key={v} style={{
+              width: 14, height: 14, borderRadius: 4,
+              background: c.bg, border: `1.5px solid ${c.border}`
+            }} />
+          );
+        })}
+        <span>More submissions</span>
       </div>
     </div>
   );
 }
+
+
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function StudentLeetcode({ user, data, forms, setForm, api, action }) {
@@ -504,22 +568,17 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
             </div>
           </div>
 
-          {/* Heatmap card */}
-          {record && (
-            <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity size={16} className="text-primary" />
-                <span className="text-sm font-bold text-textPrimary">Submission Heatmap</span>
-                <span className="text-[10px] text-textMuted font-semibold ml-1">from LeetCode.com</span>
-              </div>
-              <SubmissionHeatmap
-                submissionCalendar={record.submissionCalendar || '{}'}
-                totalActiveDays={record.totalActiveDays || 0}
-                maxStreak={record.maxStreak || 0}
-                totalCount={heatmapTotal}
-              />
+          {/* Heatmap card — always visible, uses platform LMS submissions only */}
+          <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity size={16} className="text-primary" />
+              <span className="text-sm font-bold text-textPrimary">Platform Submission Heatmap</span>
+              <span className="text-[10px] bg-primary/10 text-primary font-semibold ml-1 px-2 py-0.5 rounded">LMS only</span>
             </div>
-          )}
+            <SubmissionHeatmap
+              platformSubmissions={data.leetcodeSubmissions || []}
+            />
+          </div>
         </div>
       )}
 
