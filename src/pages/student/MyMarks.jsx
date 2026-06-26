@@ -254,6 +254,48 @@ export default function MyMarks({ data, user, api, forms, setForm, action }) {
         </div>
       </div>
 
+      {/* Marks Rubric Section */}
+      <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
+        <SectionTitle icon={Award} title="LMS Grading Rubric & Points System" />
+        <p className="text-xs text-textMuted mt-1 mb-4">
+          Learn how your points are calculated for each active learning activity.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-bgPrimary border border-borderCool rounded-xl p-4 flex flex-col gap-1.5">
+            <strong className="text-xs text-textPrimary flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" /> Assignments (Tasks)
+            </strong>
+            <p className="text-[11px] text-textSecondary leading-relaxed">
+              Earn up to <strong>Max Score</strong>. Submissions after the due date lose 1 point (out of 10 base points) per 30 minutes after a 3-hour buffer.
+            </p>
+          </div>
+          <div className="bg-bgPrimary border border-borderCool rounded-xl p-4 flex flex-col gap-1.5">
+            <strong className="text-xs text-textPrimary flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-warning" /> LeetCode Challenges
+            </strong>
+            <p className="text-[11px] text-textSecondary leading-relaxed">
+              Earn up to <strong>10 pts</strong> per assigned problem. Late submissions decay past the due date. Profile streaks earn an extra <strong>5 pts</strong> per day.
+            </p>
+          </div>
+          <div className="bg-bgPrimary border border-borderCool rounded-xl p-4 flex flex-col gap-1.5">
+            <strong className="text-xs text-textPrimary flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-success" /> Attendance Logs
+            </strong>
+            <p className="text-[11px] text-textSecondary leading-relaxed">
+              Get exactly <strong>10 pts</strong> for every calendar day marked Present (status <code>P</code>) or covered by approved leaves.
+            </p>
+          </div>
+          <div className="bg-bgPrimary border border-borderCool rounded-xl p-4 flex flex-col gap-1.5">
+            <strong className="text-xs text-textPrimary flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple" /> Daily Check-ins
+            </strong>
+            <p className="text-[11px] text-textSecondary leading-relaxed">
+              Earn up to <strong>10 pts</strong> based on logged hours: <code>&ge;7.5 hrs = 10 pts</code>, <code>&lt;3 hrs = 0 pts</code>, and proportional points for durations in-between.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-1.5 p-1 bg-bgSecondary border border-borderCool rounded-xl w-fit">
         <button

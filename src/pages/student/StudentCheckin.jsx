@@ -14,11 +14,69 @@ export default function StudentCheckin({ data, api, action, loading }) {
   const todayRecord = records.find(r => r.date === todayStr);
   const hasCheckedInToday = !!(todayRecord && todayRecord.checkIn);
 
+  const [elapsedTime, setElapsedTime] = React.useState('00:00:00');
+
+  React.useEffect(() => {
+    if (!hasCheckedInToday || !todayRecord?.checkIn || todayRecord.checkOut) {
+      setElapsedTime('00:00:00');
+      return;
+    }
+
+    const checkInTime = new Date(todayRecord.checkIn).getTime();
+
+    const updateTimer = () => {
+      const diffMs = Date.now() - checkInTime;
+      if (diffMs < 0) {
+        setElapsedTime('00:00:00');
+        return;
+      }
+      const diffSecs = Math.floor(diffMs / 1000);
+      const hrs = Math.floor(diffSecs / 3600);
+      const mins = Math.floor((diffSecs % 3600) / 60);
+      const secs = diffSecs % 60;
+      setElapsedTime(
+        `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+      );
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [hasCheckedInToday, todayRecord?.checkIn, todayRecord?.checkOut]);
+
+  const getTargetCheckoutTime = () => {
+    if (!hasCheckedInToday || !todayRecord?.checkIn) return null;
+    const checkInTime = new Date(todayRecord.checkIn);
+    const target = new Date(checkInTime.getTime() + 7.5 * 60 * 60 * 1000);
+    return target.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   function calculatePoints(hours) {
     if (!hours || hours < 3) return 0;
     if (hours >= 7.5) return 10;
     return Math.round(((hours - 3) / 4.5) * 10);
   }
+
+  // Calculate points for active ticking duration
+  const getActiveSessionPoints = () => {
+    if (!hasCheckedInToday || !todayRecord?.checkIn || todayRecord.checkOut) return 0;
+    const diffMs = Date.now() - new Date(todayRecord.checkIn).getTime();
+    const hours = Math.max(0, diffMs / 36e5);
+    return calculatePoints(hours);
+  };
+
+  const [activePoints, setActivePoints] = React.useState(0);
+
+  React.useEffect(() => {
+    if (hasCheckedInToday && !todayRecord.checkOut) {
+      const interval = setInterval(() => {
+        setActivePoints(getActiveSessionPoints());
+      }, 10000); // update points estimate every 10 seconds
+      setActivePoints(getActiveSessionPoints());
+      return () => clearInterval(interval);
+    }
+  }, [hasCheckedInToday, todayRecord?.checkIn, todayRecord?.checkOut]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,9 +100,17 @@ export default function StudentCheckin({ data, api, action, loading }) {
           </div>
 
           <div className="flex flex-col">
-            <span className="text-[10px] text-textMuted font-bold uppercase tracking-wider">Logged Hours</span>
+            <span className="text-[10px] text-textMuted font-bold uppercase tracking-wider">
+              {hasCheckedInToday && !todayRecord.checkOut ? 'Elapsed Time (Active Session)' : 'Logged Hours'}
+            </span>
             <strong className="text-lg font-black text-textPrimary mt-1">
-              {hasCheckedInToday && todayRecord?.totalHours ? `${todayRecord.totalHours.toFixed(2)} hrs` : '0.00 hrs'}
+              {hasCheckedInToday && !todayRecord.checkOut ? (
+                <span className="text-primary font-mono">{elapsedTime}</span>
+              ) : hasCheckedInToday && todayRecord?.totalHours ? (
+                `${todayRecord.totalHours.toFixed(2)} hrs`
+              ) : (
+                '0.00 hrs'
+              )}
             </strong>
           </div>
 
@@ -53,11 +119,28 @@ export default function StudentCheckin({ data, api, action, loading }) {
             <div className="flex items-center gap-1.5 mt-1">
               <Award size={18} className="text-primary" />
               <strong className="text-lg font-black text-primary">
-                {hasCheckedInToday && todayRecord?.totalHours ? `${calculatePoints(todayRecord.totalHours)} / 10 pts` : '0 / 10 pts'}
+                {hasCheckedInToday && !todayRecord.checkOut ? (
+                  `${activePoints} / 10 pts`
+                ) : hasCheckedInToday && todayRecord?.totalHours ? (
+                  `${calculatePoints(todayRecord.totalHours)} / 10 pts`
+                ) : (
+                  '0 / 10 pts'
+                )}
               </strong>
             </div>
           </div>
         </div>
+
+        {/* Target Checkout Warning */}
+        {hasCheckedInToday && !todayRecord.checkOut && (
+          <div className="flex items-center gap-2.5 p-4 bg-primary/10 border border-primary/20 rounded-xl text-xs text-primary font-medium mb-6 leading-relaxed">
+            <Hourglass size={15} className="shrink-0 animate-spin text-primary" />
+            <span>
+              Your session started at <strong>{new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>. 
+              To earn the full 10 check-in points (minimum 7.5 hours required), you should stay checked in until at least <strong>{getTargetCheckoutTime()}</strong>.
+            </span>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">

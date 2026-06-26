@@ -163,7 +163,7 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
 
                         {/* Status / Selector Column */}
                         <div className="col-span-2 flex justify-end items-center pr-2">
-                          {isEditing ? (
+                          {isEditing && record.status !== 'L' ? (
                             <div className="inline-flex rounded-lg border border-borderCool p-0.5 bg-bgPrimary shadow-sm">
                               <button
                                 type="button"
