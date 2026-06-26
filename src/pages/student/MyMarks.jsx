@@ -41,7 +41,7 @@ export default function MyMarks({ data, user, api, forms, setForm, action }) {
       if (!daily[date]) {
         daily[date] = { date, attendance: 0, checkin: 0, task: 0, leetcode: 0 };
       }
-      if (a.status === 'P') {
+      if (['P', 'present', 'L', 'leave'].includes(a.status)) {
         daily[date].attendance = 10;
       }
       if (a.checkIn && a.checkOut) {

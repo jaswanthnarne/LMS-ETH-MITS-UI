@@ -11,7 +11,7 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
   const isInitialLoading = loading && (!data.tasks || data.tasks.length === 0) && (!data.attendance || data.attendance.length === 0);
 
   // Calculate statistics
-  const presentDays = records.filter(r => r.status === 'P').length;
+  const presentDays = records.filter(r => ['P', 'present', 'L', 'leave'].includes(r.status)).length;
   const totalDays = records.length;
   const attendancePercentage = totalDays > 0 
     ? ((presentDays / totalDays) * 100).toFixed(1) 
@@ -20,7 +20,7 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const todayRecord = records.find(r => r.date === todayStr);
   const todayStatus = todayRecord 
-    ? (todayRecord.status === 'P' ? 'Present' : todayRecord.status === 'Ab' ? 'Absent' : 'Leave')
+    ? (['P', 'present'].includes(todayRecord.status) ? 'Present' : ['Ab', 'absent'].includes(todayRecord.status) ? 'Absent' : 'Leave Approved')
     : 'Not Marked';
 
   const submittedTaskIds = new Set(

@@ -6,8 +6,8 @@ export default function MyAttendance({ data }) {
   const records = data.attendance || [];
 
   // Calculate statistics
-  const presentDays = records.filter(r => r.status === 'P').length;
-  const absentDays = records.filter(r => r.status === 'Ab').length;
+  const presentDays = records.filter(r => ['P', 'present', 'L', 'leave'].includes(r.status)).length;
+  const absentDays = records.filter(r => ['Ab', 'absent'].includes(r.status)).length;
   
   // Calculate approved leave days directly from leaves data
   const leavesList = data.leaves || [];
@@ -123,19 +123,19 @@ export default function MyAttendance({ data }) {
                     <span className="text-sm font-bold text-textPrimary">{record.date}</span>
                     
                     <div className="flex justify-end items-center pr-2">
-                      {record.status === 'P' && (
+                      {(record.status === 'P' || record.status === 'present') && (
                         <span className="text-[10px] font-bold px-3 py-1 bg-success/15 text-success rounded-full border border-success/10 uppercase tracking-wider">
                           Present
                         </span>
                       )}
-                      {record.status === 'Ab' && (
+                      {(record.status === 'Ab' || record.status === 'absent') && (
                         <span className="text-[10px] font-bold px-3 py-1 bg-danger/15 text-danger rounded-full border border-danger/10 uppercase tracking-wider">
                           Absent
                         </span>
                       )}
-                      {record.status === 'L' && (
-                        <span className="text-[10px] font-bold px-3 py-1 bg-warning/15 text-warning rounded-full border border-warning/10 uppercase tracking-wider">
-                          Leave (L)
+                      {(record.status === 'L' || record.status === 'leave') && (
+                        <span className="text-[10px] font-bold px-3 py-1 bg-success/15 text-success rounded-full border border-success/10 uppercase tracking-wider">
+                          Leave Approved
                         </span>
                       )}
                       {!record.status && (

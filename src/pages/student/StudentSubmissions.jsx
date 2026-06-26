@@ -172,7 +172,7 @@ export default function StudentSubmissions({ data, api, action }) {
                           <div className="flex justify-between items-center">
                             <span>Due Date (IST):</span>
                             <span className="font-semibold text-textPrimary">
-                              {sub.task?.dueDate ? new Date(sub.task.dueDate).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'Open'}
+                              {sub.task?.dueDate ? new Date(sub.task.dueDate).toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -294,7 +294,7 @@ export default function StudentSubmissions({ data, api, action }) {
                           <div className="flex justify-between items-center">
                             <span>Due Date (IST):</span>
                             <span className="font-semibold text-textPrimary">
-                              {sub.problem?.dueDate ? new Date(sub.problem.dueDate).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : 'Open'}
+                              {sub.problem?.dueDate ? new Date(sub.problem.dueDate).toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
