@@ -74,84 +74,94 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
+        {/* Attendance Points */}
         <div className="flex items-center gap-4 bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
           <div className="p-3 rounded-lg bg-primary/10 text-primary">
             <Clock size={20} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Attendance Rate</span>
+            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Attendance Pts</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
               {isInitialLoading ? (
                 <span className="inline-block w-12 h-5 bg-borderCool rounded animate-pulse" />
               ) : (
-                `${attendancePercentage}%`
+                `${leaderboardStats?.attendanceMarks || 0} pts`
               )}
             </strong>
+            <small className="text-[10px] text-textMuted mt-1 leading-none">Rate: {attendancePercentage}%</small>
           </div>
         </div>
 
+        {/* Check-in Points */}
         <div className="flex items-center gap-4 bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
           <div className="p-3 rounded-lg bg-success/10 text-success">
             <CheckCircle size={20} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Today's Status</span>
-            <strong className="text-base font-bold text-textPrimary leading-none mt-1 truncate">
+            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Check-in Pts</span>
+            <strong className="text-base font-bold text-textPrimary leading-none mt-1">
               {isInitialLoading ? (
                 <span className="inline-block w-16 h-5 bg-borderCool rounded animate-pulse" />
               ) : (
-                todayStatus
+                `${leaderboardStats?.checkInMarks || 0} pts`
               )}
             </strong>
+            <small className="text-[10px] text-textMuted mt-1 leading-none">Duration logs</small>
           </div>
         </div>
 
+        {/* Task Points */}
         <div className="flex items-center gap-4 bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
           <div className="p-3 rounded-lg bg-purple/10 text-purple">
             <Target size={20} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Assigned Tasks</span>
+            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Task Pts</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
               {isInitialLoading ? (
                 <span className="inline-block w-10 h-5 bg-borderCool rounded animate-pulse" />
               ) : (
-                `${data.tasks.length} total`
+                `${leaderboardStats?.taskScore || 0} pts`
               )}
             </strong>
+            <small className="text-[10px] text-textMuted mt-1 leading-none">Streak: {leaderboardStats?.taskStreak || 0} tasks</small>
           </div>
         </div>
 
+        {/* LeetCode Points */}
         <div className="flex items-center gap-4 bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
           <div className="p-3 rounded-lg bg-warning/10 text-warning">
             <Award size={20} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Quizzes</span>
+            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">LeetCode Pts</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
               {isInitialLoading ? (
                 <span className="inline-block w-10 h-5 bg-borderCool rounded animate-pulse" />
               ) : (
-                `${data.quizzes.length} available`
+                `${leaderboardStats?.leetcodeScore || 0} pts`
               )}
             </strong>
+            <small className="text-[10px] text-textMuted mt-1 leading-none">Streak: {leaderboardStats?.leetcodeStreak || 0} days</small>
           </div>
         </div>
 
+        {/* Overall Score */}
         <div className="flex items-center gap-4 bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">
           <div className="p-3 rounded-lg bg-amber-500/10 text-amber-500">
             <Trophy size={20} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Overall Score</span>
+            <span className="text-[11px] text-textMuted font-medium uppercase tracking-wider">Total Score</span>
             <strong className="text-base font-bold text-textPrimary leading-none mt-1">
               {isInitialLoading ? (
                 <span className="inline-block w-14 h-5 bg-borderCool rounded animate-pulse" />
               ) : (
-                leaderboardStats ? `${leaderboardStats.overallScore} pts` : '0 pts'
+                `${leaderboardStats?.overallScore || 0} pts`
               )}
             </strong>
+            <small className="text-[10px] text-textMuted mt-1 leading-none">Combined scoreboard</small>
           </div>
         </div>
       </div>

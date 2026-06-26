@@ -6,16 +6,32 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
   const records = data.attendance || [];
   
   const [isEditing, setIsEditing] = useState(false);
+  const [editMode, setEditMode] = useState(''); // 'take' | 'edit'
   const [editRecords, setEditRecords] = useState({}); // studentId -> status
 
   function startTakingAttendance() {
     const initial = {};
     records.forEach((item) => {
       const studentId = item.student?._id;
+      // When taking attendance, default unmarked ('') students to 'Ab'
+      const status = item.attendance?.status || 'Ab';
+      initial[studentId] = status;
+    });
+    setEditRecords(initial);
+    setEditMode('take');
+    setIsEditing(true);
+  }
+
+  function startEditingAttendance() {
+    const initial = {};
+    records.forEach((item) => {
+      const studentId = item.student?._id;
+      // When editing attendance, preserve unmarked ('') students as-is
       const status = item.attendance?.status || '';
       initial[studentId] = status;
     });
     setEditRecords(initial);
+    setEditMode('edit');
     setIsEditing(true);
   }
 
@@ -92,6 +108,12 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                       onClick={startTakingAttendance}
                     >
                       <Edit3 size={14} /> Take Attendance
+                    </button>
+                    <button 
+                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-warning hover:bg-warning/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
+                      onClick={startEditingAttendance}
+                    >
+                      <Edit3 size={14} /> Edit Attendance
                     </button>
                   </>
                 ) : (
