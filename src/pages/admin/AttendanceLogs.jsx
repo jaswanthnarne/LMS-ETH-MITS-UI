@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
-import { CalendarCheck, RefreshCw, Edit3, Save, X, ClipboardCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CalendarCheck, RefreshCw, Edit3, Save, X, ClipboardCheck, Eye, ChevronLeft } from 'lucide-react';
 import { Badge, Field, Select, SectionTitle } from '../../components/Shared';
 
 export default function AttendanceLogs({ data, forms, setForm, api, action, refresh }) {
   const records = data.attendance || [];
   
+  const [actionMode, setActionMode] = useState(''); // '' | 'view' | 'take' | 'edit'
   const [isEditing, setIsEditing] = useState(false);
-  const [editMode, setEditMode] = useState(''); // 'take' | 'edit'
   const [editRecords, setEditRecords] = useState({}); // studentId -> status
 
-  function startTakingAttendance() {
-    const initial = {};
-    records.forEach((item) => {
-      const studentId = item.student?._id;
-      // When taking attendance, default unmarked ('') students to 'Ab'
-      const status = item.attendance?.status || 'Ab';
-      initial[studentId] = status;
-    });
-    setEditRecords(initial);
-    setEditMode('take');
-    setIsEditing(true);
-  }
+  // Sync editRecords when data changes and we are in take/edit mode
+  useEffect(() => {
+    const selectedBatchId = forms.filters.batch;
+    if (!selectedBatchId) return;
 
-  function startEditingAttendance() {
-    const initial = {};
-    records.forEach((item) => {
-      const studentId = item.student?._id;
-      // When editing attendance, preserve unmarked ('') students as-is
-      const status = item.attendance?.status || '';
-      initial[studentId] = status;
-    });
-    setEditRecords(initial);
-    setEditMode('edit');
-    setIsEditing(true);
-  }
+    if (actionMode === 'take') {
+      const initial = {};
+      records.forEach((item) => {
+        const studentId = item.student?._id;
+        // Default unmarked ('') students to 'Ab' when taking attendance
+        const status = item.attendance?.status || 'Ab';
+        initial[studentId] = status;
+      });
+      setEditRecords(initial);
+      setIsEditing(true);
+    } else if (actionMode === 'edit') {
+      const initial = {};
+      records.forEach((item) => {
+        const studentId = item.student?._id;
+        // Preserve unmarked ('') students as-is when editing attendance
+        const status = item.attendance?.status || '';
+        initial[studentId] = status;
+      });
+      setEditRecords(initial);
+      setIsEditing(true);
+    } else {
+      setIsEditing(false);
+    }
+  }, [data.attendance, actionMode, forms.filters.batch]);
 
   function handleStatusChange(studentId, status) {
     setEditRecords((prev) => ({ ...prev, [studentId]: status }));
@@ -53,10 +57,74 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
       }),
       'Batch attendance updated successfully'
     );
-    setIsEditing(false);
+    setActionMode('view');
   }
 
   const selectedBatchId = forms.filters.batch;
+
+  // Choice Hub Screen when no mode is selected
+  if (!actionMode) {
+    return (
+      <div className="flex flex-col gap-6 items-center justify-center py-12 max-w-4xl mx-auto">
+        <div className="text-center max-w-md mb-8">
+          <SectionTitle icon={CalendarCheck} title="Cohort Attendance Hub" className="justify-center text-xl" />
+          <p className="text-xs text-textMuted mt-2">
+            Select an action pathway below to start managing, marking, or reviewing daily student attendance sheets.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          {/* Card 1: View Logs */}
+          <button
+            onClick={() => setActionMode('view')}
+            className="flex flex-col gap-4 bg-bgSecondary border border-borderCool hover:border-primary/40 p-6 rounded-2xl text-left shadow-sm hover:shadow-md hover:bg-bgHover/20 transition-all group"
+          >
+            <div className="p-3.5 rounded-xl bg-primary/10 text-primary w-fit group-hover:scale-110 transition-transform">
+              <Eye size={24} />
+            </div>
+            <div>
+              <h3 className="font-title font-bold text-sm text-textPrimary mb-1.5">View Logs</h3>
+              <p className="text-xs text-textMuted leading-relaxed font-light">
+                Browse through historical student attendance logs, session durations, and checked-in logs.
+              </p>
+            </div>
+          </button>
+
+          {/* Card 2: Take Attendance */}
+          <button
+            onClick={() => setActionMode('take')}
+            className="flex flex-col gap-4 bg-bgSecondary border border-borderCool hover:border-success/40 p-6 rounded-2xl text-left shadow-sm hover:shadow-md hover:bg-bgHover/20 transition-all group"
+          >
+            <div className="p-3.5 rounded-xl bg-success/10 text-success w-fit group-hover:scale-110 transition-transform">
+              <ClipboardCheck size={24} />
+            </div>
+            <div>
+              <h3 className="font-title font-bold text-sm text-textPrimary mb-1.5">Take Attendance</h3>
+              <p className="text-xs text-textMuted leading-relaxed font-light">
+                Mark attendance for today. Students without checks will default to Absent (`Ab`) automatically.
+              </p>
+            </div>
+          </button>
+
+          {/* Card 3: Edit Attendance */}
+          <button
+            onClick={() => setActionMode('edit')}
+            className="flex flex-col gap-4 bg-bgSecondary border border-borderCool hover:border-warning/40 p-6 rounded-2xl text-left shadow-sm hover:shadow-md hover:bg-bgHover/20 transition-all group"
+          >
+            <div className="p-3.5 rounded-xl bg-warning/10 text-warning w-fit group-hover:scale-110 transition-transform">
+              <Edit3 size={24} />
+            </div>
+            <div>
+              <h3 className="font-title font-bold text-sm text-textPrimary mb-1.5">Edit Attendance</h3>
+              <p className="text-xs text-textMuted leading-relaxed font-light">
+                Modify or correct past attendance records. Keeps unmarked states (`Not Marked`) intact.
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,9 +132,24 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
         {/* Head Area */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 mb-5 border-b border-borderCool">
           <div>
-            <SectionTitle icon={CalendarCheck} title="Manual Attendance Sheets" />
+            <button
+              onClick={() => setActionMode('')}
+              className="flex items-center gap-1 text-xs font-semibold text-textMuted hover:text-textPrimary mb-2 transition-colors"
+            >
+              <ChevronLeft size={14} /> Back to Hub Menu
+            </button>
+            <SectionTitle 
+              icon={actionMode === 'take' ? ClipboardCheck : actionMode === 'edit' ? Edit3 : Eye} 
+              title={
+                actionMode === 'take' ? 'Take Attendance' : 
+                actionMode === 'edit' ? 'Edit Attendance Sheet' : 
+                'View Attendance Logs'
+              } 
+            />
             <p className="text-xs text-textMuted mt-1">
-              Select a batch cohort and date to view or mark student attendance grades manually.
+              {actionMode === 'take' && 'Select cohort and date to start marking attendance logs. Unmarked defaults to Absent.'}
+              {actionMode === 'edit' && 'Select cohort and date to edit attendance. Unmarked states will be preserved.'}
+              {actionMode === 'view' && 'Select cohort and date to view student attendance history records.'}
             </p>
           </div>
 
@@ -78,7 +161,6 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                 type="date" 
                 value={forms.filters.date} 
                 onChange={(value) => setForm('filters', 'date', value)} 
-                disabled={isEditing}
                 className="w-full sm:w-[150px]"
               />
             </div>
@@ -88,7 +170,6 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                 value={forms.filters.batch}
                 onChange={(value) => setForm('filters', 'batch', value)}
                 options={[['', 'Select Batch Cohort'], ...data.batches.map((batch) => [batch._id, batch.name])]}
-                disabled={isEditing}
                 className="w-full sm:w-[220px]"
               />
             </div>
@@ -96,26 +177,12 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
             {selectedBatchId && (
               <div className="flex gap-2 w-full sm:w-auto">
                 {!isEditing ? (
-                  <>
-                    <button 
-                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
-                      onClick={() => refresh()}
-                    >
-                      <RefreshCw size={14} /> View
-                    </button>
-                    <button 
-                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-success hover:bg-success/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
-                      onClick={startTakingAttendance}
-                    >
-                      <Edit3 size={14} /> Take Attendance
-                    </button>
-                    <button 
-                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-warning hover:bg-warning/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
-                      onClick={startEditingAttendance}
-                    >
-                      <Edit3 size={14} /> Edit Attendance
-                    </button>
-                  </>
+                  <button 
+                    className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/95 text-white px-4 py-2.5 rounded-lg shadow-sm"
+                    onClick={() => refresh()}
+                  >
+                    <RefreshCw size={14} /> Refresh
+                  </button>
                 ) : (
                   <>
                     <button 
@@ -126,7 +193,7 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                     </button>
                     <button 
                       className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-4 py-2.5 rounded-lg" 
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => setActionMode('view')}
                     >
                       <X size={14} /> Cancel
                     </button>
@@ -141,9 +208,9 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
         {!selectedBatchId ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-4 bg-bgPrimary border border-dashed border-borderCool rounded-xl">
             <ClipboardCheck size={40} className="text-textMuted mb-3 animate-pulse" />
-            <h4 className="text-sm font-bold text-textPrimary">No Batch Selected</h4>
+            <h4 className="text-sm font-bold text-textPrimary">No Cohort Selected</h4>
             <p className="text-xs text-textMuted max-w-sm mt-1">
-              Please choose a batch cohort from the dropdown list above to display its active student roster and take attendance.
+              Please choose a batch cohort from the dropdown list above to fetch the active student roster.
             </p>
           </div>
         ) : (
@@ -151,9 +218,10 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
             <div className="w-full overflow-x-auto">
               <div className="min-w-[600px] divide-y divide-borderCool">
                 {/* Table Header */}
-                <div className="grid grid-cols-6 gap-4 px-5 py-3.5 bg-bgPrimary text-xs font-bold text-textMuted uppercase tracking-wider">
-                  <span className="col-span-4">Student Profile</span>
-                  <span className="col-span-2 text-right pr-6">Attendance Grade</span>
+                <div className="grid grid-cols-6 gap-4 px-5 py-3.5 bg-bgPrimary text-xs font-bold text-textMuted uppercase tracking-wider items-center">
+                  <span className="col-span-3">Student Profile</span>
+                  <span className="col-span-1 text-center">Attendance %</span>
+                  <span className="col-span-2 text-right pr-6">{forms.filters.date}</span>
                 </div>
                 
                 {/* Table Body */}
@@ -166,14 +234,14 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                     const record = item.attendance || item;
                     const student = item.student || {};
                     const studentId = student._id;
-
+ 
                     return (
                       <div 
                         className="grid grid-cols-6 gap-4 px-5 py-4 items-center hover:bg-bgHover/20 transition-colors" 
                         key={`${studentId}-${record.date}`}
                       >
                         {/* Profile Column */}
-                        <div className="col-span-4 flex items-center gap-3">
+                        <div className="col-span-3 flex items-center gap-3">
                           <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0 border border-primary/20">
                             {student.name ? student.name[0].toUpperCase() : 'S'}
                           </div>
@@ -181,6 +249,13 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                             <strong className="text-sm font-bold text-textPrimary truncate">{student.name}</strong>
                             <small className="text-xs text-textMuted truncate mt-0.5">Roll: {student.rollNumber || 'N/A'} | {student.email}</small>
                           </div>
+                        </div>
+
+                        {/* Attendance % Column */}
+                        <div className="col-span-1 text-center">
+                          <span className="text-sm font-semibold text-textPrimary">
+                            {record.summary ? `${record.summary.percentage}%` : '100.0%'}
+                          </span>
                         </div>
 
                         {/* Status / Selector Column */}

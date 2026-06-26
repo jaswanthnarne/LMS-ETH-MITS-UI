@@ -611,7 +611,7 @@ function AppContent() {
 
   useEffect(() => {
     refresh('silent');
-  }, [token]);
+  }, [token, forms.filters.date, forms.filters.batch]);
 
   useEffect(() => {
     if (!token) return;
