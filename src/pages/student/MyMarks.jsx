@@ -181,6 +181,28 @@ export default function MyMarks({ data, user, api, forms, setForm, action }) {
         </button>
       </div>
 
+      {/* Scoring System Reference Guide */}
+      <div className="bg-bgSecondary border border-borderCool rounded-xl p-4 shadow-sm flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-textPrimary">
+          <Trophy size={15} className="text-primary" />
+          <span>LMS Scoring & Point Rules</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-textSecondary font-medium">
+          <div className="flex items-center gap-2 bg-bgPrimary p-2.5 rounded-lg border border-borderCool/60">
+            <CheckCircle size={14} className="text-success" />
+            <span><strong>Attendance:</strong> 10 pts per Present (P) / Approved Leave (L)</span>
+          </div>
+          <div className="flex items-center gap-2 bg-bgPrimary p-2.5 rounded-lg border border-borderCool/60">
+            <Flame size={14} className="text-warning" />
+            <span><strong>LeetCode Streaks:</strong> 5 pts per streak day</span>
+          </div>
+          <div className="flex items-center gap-2 bg-bgPrimary p-2.5 rounded-lg border border-borderCool/60">
+            <Award size={14} className="text-primary" />
+            <span><strong>Task Streaks:</strong> 5 pts per streak assignment</span>
+          </div>
+        </div>
+      </div>
+
       {subTab === 'marks' && (
         <div className="flex flex-col gap-6">
           {/* Overview Cards */}
