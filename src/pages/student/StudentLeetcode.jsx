@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Code2, BarChart3, Star, Flame, Send, Award, CheckCircle, Link as LinkIcon, Calendar, Trophy, X } from 'lucide-react';
 import { Field, SectionTitle, DataList, Row, Badge, Modal } from '../../components/Shared';
 
@@ -8,6 +8,32 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
   const [dateFilter, setDateFilter] = useState('');
 
   const [syncing, setSyncing] = useState(false);
+  const [platformLeaderboard, setPlatformLeaderboard] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
+
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      try {
+        setLoadingLeaderboard(true);
+        const res = await api.get('/api/analytics/leaderboard');
+        if (res && res.leaderboard) {
+          const sorted = [...res.leaderboard].sort((a, b) => {
+            const scoreA = (a.leetcodeScore || 0) + (a.leetcodeStreak || 0) * 5;
+            const scoreB = (b.leetcodeScore || 0) + (b.leetcodeStreak || 0) * 5;
+            return scoreB - scoreA;
+          });
+          setPlatformLeaderboard(sorted);
+        }
+      } catch (err) {
+        console.error('Error fetching platform leetcode leaderboard:', err);
+      } finally {
+        setLoadingLeaderboard(false);
+      }
+    }
+    if (tab === 'leaderboard') {
+      fetchLeaderboard();
+    }
+  }, [tab, api]);
 
   const record = data.leetcode; // student's linked profile
   const problems = data.leetcodeProblems || [];
@@ -115,9 +141,20 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                   >
                     <div className="min-w-0 flex flex-col gap-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase tracking-wider">
-                          {problem.batch ? `${problem.batch.name}` : 'Cohort'}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded uppercase tracking-wider">
+                            {problem.batch ? `${problem.batch.name}` : 'Cohort'}
+                          </span>
+                          {problem.difficulty && (
+                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider ${
+                              problem.difficulty === 'Easy' ? 'bg-success/15 text-success border border-success/10' :
+                              problem.difficulty === 'Hard' ? 'bg-danger/15 text-danger border border-danger/10' :
+                              'bg-warning/15 text-warning border border-warning/10'
+                            }`}>
+                              {problem.difficulty}
+                            </span>
+                          )}
+                        </div>
                         {status && <Badge value={status} />}
                       </div>
                       <strong className="font-title text-sm font-semibold text-textPrimary block truncate">
@@ -280,14 +317,16 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
           <div className="pb-5 mb-5 border-b border-borderCool">
             <SectionTitle icon={Trophy} title="Leetcode Leaderboard" />
             <p className="text-xs text-textMuted mt-1">
-              Top rank coders in your cohort based on total problems solved and active streak.
+              Top rank coders in your cohort based on assigned problems solved and active streak on our platform.
             </p>
           </div>
 
           <DataList emptyText="No leetcode metrics yet.">
             <div className="grid grid-cols-1 gap-2">
-              {Array.isArray(leaderboard) ? (
-                leaderboard.map((recordItem, index) => {
+              {loadingLeaderboard ? (
+                <div className="text-center py-10 text-xs text-textMuted">Loading platform leaderboard...</div>
+              ) : Array.isArray(platformLeaderboard) && platformLeaderboard.length > 0 ? (
+                platformLeaderboard.map((item, index) => {
                   const rankColor = index === 0 
                     ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' 
                     : index === 1 
@@ -299,7 +338,7 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                   return (
                     <div 
                       className="flex justify-between items-center gap-4 bg-bgPrimary border border-borderCool/80 rounded-xl px-5 py-4 hover:border-primary/20 transition-colors"
-                      key={recordItem._id}
+                      key={item.student?._id}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div className={`w-7 h-7 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 ${rankColor}`}>
@@ -307,19 +346,19 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                         </div>
                         <div className="min-w-0">
                           <span className="text-sm font-semibold text-textPrimary block truncate">
-                            {recordItem.student?.name || recordItem.username}
+                            {item.student?.name}
                           </span>
                           <span className="text-[10px] text-textMuted block font-medium truncate mt-0.5">
-                            Handle: @{recordItem.username} | Easy: {recordItem.easy || 0} • Med: {recordItem.medium || 0} • Hard: {recordItem.hard || 0}
+                            Roll: {item.student?.rollNumber || 'N/A'} | Email: {item.student?.email}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right">
-                          <strong className="text-sm font-bold text-textPrimary block">{recordItem.totalSolved || 0} solved</strong>
+                          <strong className="text-sm font-bold text-textPrimary block">{(item.leetcodeScore || 0) + (item.leetcodeStreak || 0) * 5} pts</strong>
                           <span className="block text-[9px] uppercase font-bold text-warning-text mt-0.5 bg-warning-light border border-warning/10 px-1.5 py-0.5 rounded-full">
-                            {recordItem.streak || 0} days streak
+                            {item.leetcodeStreak || 0}d streak
                           </span>
                         </div>
                       </div>
@@ -327,22 +366,7 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                   );
                 })
               ) : (
-                <div className="flex justify-between items-center gap-4 bg-bgPrimary border border-borderCool rounded-xl px-5 py-4">
-                  <div className="min-w-0">
-                    <span className="text-sm font-semibold text-textPrimary block truncate">
-                      {leaderboard.student?.name || leaderboard.username}
-                    </span>
-                    <span className="text-[10px] text-textMuted block font-medium truncate mt-0.5">
-                      Handle: @{leaderboard.username}
-                    </span>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <strong className="text-sm font-bold text-textPrimary block">{leaderboard.totalSolved || 0} solved</strong>
-                    <span className="block text-[9px] uppercase font-bold text-warning-text mt-0.5 bg-warning-light border border-warning/10 px-1.5 py-0.5 rounded-full">
-                      {leaderboard.streak || 0} days streak
-                    </span>
-                  </div>
-                </div>
+                <div className="text-center py-10 text-xs text-textMuted">No platform leetcode stats found.</div>
               )}
             </div>
           </DataList>

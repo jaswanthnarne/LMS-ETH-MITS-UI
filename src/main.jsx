@@ -90,7 +90,7 @@ const empty = {
   },
   answer: {},
   leetcode: { username: '', easy: 0, medium: 0, hard: 0, streak: 0 },
-  leetcodeProblem: { title: '', url: '', batch: '', dueDate: '' },
+  leetcodeProblem: { title: '', url: '', batch: '', dueDate: '', difficulty: 'Medium' },
   leetcodeAttempt: {},
   leetcodeReview: { score: 0, feedback: '', status: 'accepted' },
   message: { text: '' },

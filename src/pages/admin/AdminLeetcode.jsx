@@ -167,6 +167,7 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
     setForm('leetcodeProblem', 'url', '');
     setForm('leetcodeProblem', 'batch', '');
     setForm('leetcodeProblem', 'dueDate', '');
+    setForm('leetcodeProblem', 'difficulty', 'Medium');
     setEditingProblemId(null);
     setIsModalOpen(true);
   }
@@ -176,6 +177,7 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
     setForm('leetcodeProblem', 'url', problem.url);
     setForm('leetcodeProblem', 'batch', problem.batch?._id || problem.batch);
     setForm('leetcodeProblem', 'dueDate', problem.dueDate ? problem.dueDate.slice(0, 10) : '');
+    setForm('leetcodeProblem', 'difficulty', problem.difficulty || 'Medium');
     setEditingProblemId(problem._id);
     setIsModalOpen(true);
   }
@@ -185,6 +187,7 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
     setForm('leetcodeProblem', 'url', '');
     setForm('leetcodeProblem', 'batch', '');
     setForm('leetcodeProblem', 'dueDate', '');
+    setForm('leetcodeProblem', 'difficulty', 'Medium');
     setEditingProblemId(null);
     setIsModalOpen(false);
   }
@@ -293,6 +296,15 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
                       <span className="font-semibold bg-bgSecondary border border-borderCool/60 px-2 py-0.5 rounded text-[10px]">
                         Batch: {problem.batch ? `${problem.batch.name}` : 'All'}
                       </span>
+                      {problem.difficulty && (
+                        <span className={`font-semibold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${
+                          problem.difficulty === 'Easy' ? 'bg-success/15 text-success border border-success/10' :
+                          problem.difficulty === 'Hard' ? 'bg-danger/15 text-danger border border-danger/10' :
+                          'bg-warning/15 text-warning border border-warning/10'
+                        }`}>
+                          {problem.difficulty}
+                        </span>
+                      )}
                       <a 
                         href={problem.url} 
                         target="_blank" 
@@ -510,6 +522,16 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
               value={forms.leetcodeProblem.batch}
               onChange={(value) => setForm('leetcodeProblem', 'batch', value)}
               options={[['', 'Assign Batch / Cohort'], ...data.batches.map((batch) => [batch._id, batch.name])]}
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-textMuted">Difficulty</span>
+            <Select
+              value={forms.leetcodeProblem.difficulty || 'Medium'}
+              onChange={(value) => setForm('leetcodeProblem', 'difficulty', value)}
+              options={[['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']]}
               required
             />
           </div>
