@@ -12,7 +12,7 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
     const initial = {};
     records.forEach((item) => {
       const studentId = item.student?._id;
-      const status = item.attendance?.status || 'Ab';
+      const status = item.attendance?.status || '';
       initial[studentId] = status;
     });
     setEditRecords(initial);
@@ -167,8 +167,8 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                             <div className="inline-flex rounded-lg border border-borderCool p-0.5 bg-bgPrimary shadow-sm">
                               <button
                                 type="button"
-                                className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${
-                                  (editRecords[studentId] || 'Ab') === 'P'
+                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${
+                                  (editRecords[studentId] || '') === 'P'
                                     ? 'bg-success text-white shadow-xs'
                                     : 'text-textSecondary hover:bg-bgHover'
                                 }`}
@@ -178,8 +178,8 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                               </button>
                               <button
                                 type="button"
-                                className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${
-                                  (editRecords[studentId] || 'Ab') === 'Ab'
+                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${
+                                  (editRecords[studentId] || '') === 'Ab'
                                     ? 'bg-danger text-white shadow-xs'
                                     : 'text-textSecondary hover:bg-bgHover'
                                 }`}
@@ -189,14 +189,25 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
                               </button>
                               <button
                                 type="button"
-                                className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${
-                                  (editRecords[studentId] || 'Ab') === 'L'
+                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${
+                                  (editRecords[studentId] || '') === 'L'
                                     ? 'bg-warning text-white shadow-xs'
                                     : 'text-textSecondary hover:bg-bgHover'
                                 }`}
                                 onClick={() => handleStatusChange(studentId, 'L')}
                               >
                                 Leave
+                              </button>
+                              <button
+                                type="button"
+                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-md transition-all ${
+                                  (editRecords[studentId] || '') === ''
+                                    ? 'bg-textMuted text-white shadow-xs'
+                                    : 'text-textSecondary hover:bg-bgHover'
+                                }`}
+                                onClick={() => handleStatusChange(studentId, '')}
+                              >
+                                Reset
                               </button>
                             </div>
                           ) : (

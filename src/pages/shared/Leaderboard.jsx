@@ -115,6 +115,7 @@ export default function Leaderboard({ user, data, forms, setForm, api, action })
                     <th className="px-5 py-3.5">Student Profile</th>
                     <th className="px-5 py-3.5 text-center">Leetcode Streak</th>
                     <th className="px-5 py-3.5 text-center">Task Streak</th>
+                    <th className="px-5 py-3.5 text-center">Attendance Pts</th>
                     <th className="px-5 py-3.5 text-center">Check-in Pts</th>
                     <th className="px-5 py-3.5 text-center">Task Pts</th>
                     <th className="px-5 py-3.5 text-center">Leetcode Pts</th>
@@ -191,9 +192,14 @@ export default function Leaderboard({ user, data, forms, setForm, api, action })
                             )}
                           </td>
 
-                          {/* Check-in Marks */}
+                          {/* Attendance Marks */}
                           <td className="px-5 py-3.5 text-center text-xs font-medium text-textSecondary">
                             {row.attendanceMarks} pts
+                          </td>
+
+                          {/* Check-in Marks */}
+                          <td className="px-5 py-3.5 text-center text-xs font-medium text-textSecondary">
+                            {row.checkInMarks} pts
                           </td>
 
                           {/* Task Points */}
