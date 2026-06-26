@@ -387,11 +387,13 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                 const submission = problem.submission;
                 const hasSubmitted = !!submission;
                 const status = submission?.status;
+                const duePassed = problem.dueDate && new Date() > new Date(problem.dueDate);
 
                 let btnText = 'Submit Solution';
                 let isBtnDisabled = false;
                 if (status === 'accepted') { btnText = 'Submission Accepted'; isBtnDisabled = true; }
                 else if (status === 'submitted') { btnText = 'Submitted'; isBtnDisabled = true; }
+                else if (duePassed) { btnText = 'Due Date Passed'; isBtnDisabled = true; }
                 else if (status === 'resubmit') { btnText = 'Resubmit Solution'; }
 
                 return (
@@ -431,7 +433,7 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
                       <div className="flex items-center justify-between text-xs text-textSecondary font-medium">
                         <span className="flex items-center gap-1">
                           <Calendar size={12} className="text-textMuted" />
-                          Due: {problem.dueDate ? new Date(problem.dueDate).toLocaleDateString() : 'Open'}
+                          Due: {problem.dueDate ? new Date(problem.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}
                         </span>
                       </div>
 

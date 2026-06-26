@@ -66,20 +66,16 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
         <DataList emptyText="No tasks currently assigned to your cohort.">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTasks.map((task) => {
-              const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
-              if (dueDateObj) {
-                dueDateObj.setHours(23, 59, 59, 999);
-              }
-              const duePassed = dueDateObj && new Date() > dueDateObj;
+              const duePassed = task.dueDate && new Date() > new Date(task.dueDate);
               const submission = mySubmissions.find(sub => String(sub.task?._id || sub.task) === String(task._id));
               const hasSubmitted = !!submission;
               const status = submission?.status;
-              const isBtnDisabled = duePassed || (hasSubmitted && (status === 'submitted' || status === 'accepted'));
+              const isBtnDisabled = (duePassed && status !== 'accepted' && status !== 'submitted') || (hasSubmitted && (status === 'submitted' || status === 'accepted'));
               
               let btnText = 'Submit Solution';
-              if (duePassed) btnText = 'Due Date Passed';
-              else if (status === 'accepted') btnText = 'Submission Accepted';
+              if (status === 'accepted') btnText = 'Submission Accepted';
               else if (status === 'submitted') btnText = 'Submitted';
+              else if (duePassed) btnText = 'Due Date Passed';
               else if (status === 'resubmit') btnText = 'Resubmit Solution';
 
               return (
@@ -115,7 +111,7 @@ export default function MyTasks({ data, forms, setForm, api, action }) {
                     <div className="flex items-center justify-between text-xs text-textSecondary font-medium">
                       <span className="flex items-center gap-1">
                         <Calendar size={12} className="text-textMuted" /> 
-                        Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}
+                        Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}
                       </span>
                       {task.leetcodeUrl && (
                         <a

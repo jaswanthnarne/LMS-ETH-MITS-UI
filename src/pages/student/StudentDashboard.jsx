@@ -212,7 +212,7 @@ export default function StudentDashboard({ user, data, api, action, go, loading 
                     <Row 
                       key={task._id} 
                       title={task.title} 
-                      meta={`Due by: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}`}
+                      meta={`Due by: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}`}
                     >
                       {submittedTaskIds.has(String(task._id)) ? (
                         <span className="text-[10px] font-bold px-2.5 py-1 bg-success/15 text-success rounded-full border border-success/10 uppercase tracking-wider">

@@ -296,6 +296,11 @@ export default function AdminLeetcode({ data, forms, setForm, api, action }) {
                       <span className="font-semibold bg-bgSecondary border border-borderCool/60 px-2 py-0.5 rounded text-[10px]">
                         Batch: {problem.batch ? `${problem.batch.name}` : 'All'}
                       </span>
+                      {problem.dueDate && (
+                        <span className="font-semibold bg-bgSecondary border border-borderCool/60 px-2 py-0.5 rounded text-[10px]">
+                          Due: {new Date(problem.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' })}
+                        </span>
+                      )}
                       {problem.difficulty && (
                         <span className={`font-semibold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${
                           problem.difficulty === 'Easy' ? 'bg-success/15 text-success border border-success/10' :

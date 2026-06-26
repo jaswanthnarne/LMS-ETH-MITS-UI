@@ -124,7 +124,7 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
                     )}
                     <span className="inline-flex items-center gap-1">
                       <Calendar size={13} className="text-textMuted" />
-                      Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Open'}
+                      Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' }) : 'Open'}
                     </span>
                   </div>
 
