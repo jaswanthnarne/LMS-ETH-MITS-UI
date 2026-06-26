@@ -100,14 +100,14 @@ function SubmissionHeatmap({ submissionCalendar, totalActiveDays, maxStreak, tot
     try { return JSON.parse(submissionCalendar || '{}'); } catch { return {}; }
   }, [submissionCalendar]);
 
-  // Build 52-week grid anchored to the past 365 days
+  // Build 52-week grid anchored from June 20, 2026 (platform launch date) to today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Start from beginning of the week 52 weeks ago
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 364);
-  // Adjust to Sunday
+  // Platform started June 20, 2026 — start the grid from the Sunday on or before that date
+  const PLATFORM_START = new Date('2026-06-20T00:00:00');
+  const startDate = new Date(PLATFORM_START);
+  // Rewind to previous Sunday so weeks align properly
   startDate.setDate(startDate.getDate() - startDate.getDay());
 
   const weeks = [];
@@ -252,14 +252,14 @@ export default function StudentLeetcode({ user, data, forms, setForm, api, actio
     return probDateStr === dateFilter;
   });
 
-  // Count total submissions in heatmap calendar
+  // Count total submissions in heatmap since platform launch (June 20, 2026)
   const heatmapTotal = React.useMemo(() => {
     if (!record?.submissionCalendar) return 0;
     try {
       const cal = JSON.parse(record.submissionCalendar);
-      const yearAgo = Math.floor(Date.now() / 1000) - 365 * 86400;
+      const platformStart = Math.floor(new Date('2026-06-20T00:00:00').getTime() / 1000);
       return Object.entries(cal).reduce((sum, [ts, cnt]) => {
-        return Number(ts) >= yearAgo ? sum + Number(cnt) : sum;
+        return Number(ts) >= platformStart ? sum + Number(cnt) : sum;
       }, 0);
     } catch { return 0; }
   }, [record?.submissionCalendar]);
