@@ -3,9 +3,6 @@ import { PlayCircle, Clock, CheckSquare, AlertCircle, AlertTriangle, Shield, Cam
 import { Badge, DataList, SectionTitle, Select } from '../../components/Shared';
 import useCheatDetection from '../../hooks/useCheatDetection';
 
-// Launch phases: idle → fullscreen → webcam → screenshare → countdown → exam → submitted
-const LAUNCH_PHASES = ['idle', 'fullscreen', 'webcam', 'screenshare', 'countdown', 'exam', 'submitted'];
-
 export default function LiveQuizPlayer({ data, forms, setForm, api, action, socket, user, forceActiveQuizId }) {
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [attempt, setAttempt] = useState(null);
@@ -23,8 +20,35 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
   const timerRef = useRef(null);
   const questionTimesRef = useRef({});
   const activeAttemptRef = useRef(null);
+  
+  // Keep camera and screen streams preserved in refs
   const webcamStreamRef = useRef(null);
   const screenshareStreamRef = useRef(null);
+  const lastMouseMoveTime = useRef(Date.now());
+
+  // ─── Real-time camera preview binder ───
+  useEffect(() => {
+    if (videoRef.current && webcamStreamRef.current) {
+      videoRef.current.srcObject = webcamStreamRef.current;
+    }
+  }, [launchPhase, currentQuestion, isFullscreenBlock]);
+
+  // ─── Listen for attempt resets from admin via socket ───
+  useEffect(() => {
+    if (!socket || !attempt) return;
+    
+    const handleReset = (payload) => {
+      if (String(payload.attemptId) === String(attempt._id)) {
+        alert('Your exam attempt has been reset by the instructor. You may now start the exam fresh.');
+        cancelAttempt();
+      }
+    };
+    
+    socket.on('quiz-student-reset', handleReset);
+    return () => {
+      socket.off('quiz-student-reset', handleReset);
+    };
+  }, [socket, attempt]);
 
   // ─── Resume saved session ───
   useEffect(() => {
@@ -69,24 +93,15 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     }
   }
 
-  // ─── Launch Sequence ───
+  // ─── Launch Sequence (Cam/Mic -> Screenshare -> Fullscreen Prompt -> Countdown -> Exam) ───
   async function beginLaunchSequence(quiz) {
     setActiveQuiz(quiz);
-    setLaunchPhase('fullscreen');
-  }
-
-  async function handleFullscreenGrant() {
-    try {
-      await document.documentElement.requestFullscreen();
-      if (activeQuiz?.requireWebcam || activeQuiz?.requireMic) {
-        setLaunchPhase('webcam');
-      } else if (activeQuiz?.requireScreenshare) {
-        setLaunchPhase('screenshare');
-      } else {
-        startCountdown();
-      }
-    } catch {
-      alert('Fullscreen is required to take this exam.');
+    if (quiz.requireWebcam || quiz.requireMic) {
+      setLaunchPhase('webcam');
+    } else if (quiz.requireScreenshare) {
+      setLaunchPhase('screenshare');
+    } else {
+      setLaunchPhase('fullscreen-prompt');
     }
   }
 
@@ -99,13 +114,14 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
       webcamStreamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
 
+      // Transition to next permission step
       if (activeQuiz?.requireScreenshare) {
         setLaunchPhase('screenshare');
       } else {
-        startCountdown();
+        setLaunchPhase('fullscreen-prompt');
       }
-    } catch {
-      alert('Camera/Microphone permission is required. Please allow access and try again.');
+    } catch (err) {
+      alert('Permissions (Camera/Microphone) are mandatory to participate in this exam. Please allow access.');
     }
   }
 
@@ -113,13 +129,23 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       screenshareStreamRef.current = stream;
-      // Detect if user stops screenshare from browser bar
       stream.getVideoTracks()[0].onended = () => {
         handleViolationTriggered('screenshareStopped', 1);
       };
+      setLaunchPhase('fullscreen-prompt');
+    } catch (err) {
+      alert('Screen sharing is required to join this examination room. Please share your entire screen.');
+    }
+  }
+
+  async function handleFullscreenGrant() {
+    try {
+      const el = document.documentElement;
+      await (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el);
+      setIsFullscreenBlock(false);
       startCountdown();
     } catch {
-      alert('Screen sharing is required. Please share your entire screen and try again.');
+      alert('Fullscreen lock failed. Please enable fullscreen to start the exam.');
     }
   }
 
@@ -148,6 +174,10 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
       activeAttemptRef.current = attemptData;
       setActiveQuiz(prev => ({ ...prev, ...quizData }));
       setTimeLeft(quizData.durationSeconds || activeQuiz.durationSeconds);
+      
+      // Initialize mouse movement tracking
+      lastMouseMoveTime.current = Date.now();
+      
       setLaunchPhase('exam');
       localStorage.setItem('mits_quiz_session_id', attemptData.clientSessionId);
 
@@ -160,7 +190,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
         });
       }
     } catch (error) {
-      alert(error.message || 'Failed to start exam.');
+      alert(error.message || 'Failed to start exam attempt.');
       cancelAttempt();
     }
   }
@@ -181,6 +211,71 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     document.addEventListener('fullscreenchange', check);
     return () => document.removeEventListener('fullscreenchange', check);
   }, [launchPhase]);
+
+  // ─── Cursor / Mouse Activity Tracking ───
+  useEffect(() => {
+    if (launchPhase !== 'exam') return;
+
+    const trackMouse = () => {
+      lastMouseMoveTime.current = Date.now();
+    };
+
+    window.addEventListener('mousemove', trackMouse);
+    return () => window.removeEventListener('mousemove', trackMouse);
+  }, [launchPhase]);
+
+  // ─── Periodic cursor and idle checks ───
+  useEffect(() => {
+    if (launchPhase !== 'exam' || !attempt) return;
+
+    const interval = setInterval(() => {
+      const idleTime = Date.now() - lastMouseMoveTime.current;
+      if (idleTime > 60000) {
+        // Reset timestamp so student is not spammed instantly
+        lastMouseMoveTime.current = Date.now();
+        
+        // Trigger idle alert warning
+        const currentBlurs = attempt.violations?.windowBlurs || 0;
+        handleViolationTriggered('windowBlur', currentBlurs + 1);
+        
+        alert('Security Alert: No cursor activity detected for over 1 minute! Please remain active and move your cursor.');
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [launchPhase, attempt]);
+
+  // ─── Laptop shutdown / tab close auto-submit ───
+  useEffect(() => {
+    if (launchPhase !== 'exam' || !activeQuiz || !attempt) return;
+
+    const handleUnload = (e) => {
+      const token = localStorage.getItem('mits_lms_token') || '';
+      const url = `${api.getUri()}/api/quiz/${activeQuiz._id}/submit-attempt?token=${token}`;
+      const answers = activeQuiz.questions.map((q, index) => {
+        const formVal = forms.answer[`${activeQuiz._id}-${index}`] ?? '';
+        const isMcq = q.type === 'single_correct' || q.type === 'true_false' || !q.type;
+        return {
+          questionIndex: index,
+          selectedIndex: isMcq ? Number(formVal !== '' ? formVal : -1) : -1,
+          submittedAnswer: !isMcq ? String(formVal) : '',
+          timeSpent: questionTimesRef.current[index] || 0
+        };
+      });
+
+      const payload = JSON.stringify({ answers, violations: attempt.violations });
+      
+      // Submit attempt reliably on exit / power-loss / reload
+      navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+      
+      e.preventDefault();
+      e.returnValue = 'Do you want to leave the exam? Your attempt will be submitted.';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [launchPhase, activeQuiz, attempt, forms.answer]);
 
   // ─── Cheat Detection ───
   const handleViolationTriggered = useCallback(async (type, count) => {
@@ -215,7 +310,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     } catch {}
 
     if ((type === 'tabSwitch' || type === 'fullScreen') && count >= 3) {
-      alert('Too many security violations! Your exam is being auto-submitted.');
+      alert('Too many security violations! Your exam has been submitted automatically.');
       autoSubmitAttempt();
     }
   }, [attempt, activeQuiz, socket, user]);
@@ -281,7 +376,15 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
   }
 
   async function submitAttempt() {
-    if (!window.confirm('Are you sure you want to submit your exam?')) return;
+    // 1-minute minimum lock check
+    const start = new Date(attempt?.startedAt || attempt?.createdAt || Date.now());
+    const duration = Math.floor((Date.now() - start.getTime()) / 1000);
+    if (duration < 60) {
+      alert(`Submission Blocked: You must spend at least 1 minute (60 seconds) in the exam before submitting. Please review your answers.`);
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to submit your exam answers?')) return;
     cleanupStreams();
     try {
       const res = await api.post(`/api/quiz/${activeQuiz._id}/submit-attempt`, { violations: attempt.violations });
@@ -290,7 +393,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
       setLaunchPhase('submitted');
       localStorage.removeItem('mits_quiz_session_id');
     } catch (e) {
-      alert('Submit failed: ' + (e.message || 'Unknown error'));
+      alert('Submission failed: ' + (e.message || 'Unknown error'));
     }
   }
 
@@ -306,34 +409,29 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     localStorage.removeItem('mits_quiz_session_id');
   }
 
-  // ─── Certificate Download ───
+  // ─── Certificate PNG Generator ───
   function downloadCertificate() {
     const canvas = document.createElement('canvas');
     canvas.width = 1200; canvas.height = 800;
     const ctx = canvas.getContext('2d');
 
-    // Background
     const grad = ctx.createLinearGradient(0, 0, 1200, 800);
     grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e3a5f');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 800);
 
-    // Border
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4;
     ctx.strokeRect(30, 30, 1140, 740);
     ctx.strokeStyle = '#1e40af'; ctx.lineWidth = 1;
     ctx.strokeRect(40, 40, 1120, 720);
 
-    // Title
     ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
     ctx.fillText('ETHNOTECH ACADEMIC SOLUTIONS', 600, 100);
     ctx.fillStyle = '#ffffff'; ctx.font = 'bold 44px Georgia';
     ctx.fillText('Certificate of Achievement', 600, 170);
 
-    // Divider
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(350, 200); ctx.lineTo(850, 200); ctx.stroke();
 
-    // Body
     ctx.fillStyle = '#94a3b8'; ctx.font = '18px Arial';
     ctx.fillText('This certifies that', 600, 260);
     ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px Georgia';
@@ -346,118 +444,271 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     ctx.fillText(`with a score of ${result?.percentage || 0}%`, 600, 470);
     ctx.fillText(`Department: ${result?.quizDepartment || activeQuiz?.department || 'N/A'}`, 600, 510);
 
-    // Date
     ctx.fillStyle = '#64748b'; ctx.font = '14px Arial';
     ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 600, 600);
-    ctx.fillText(`Roll: ${user?.rollNumber || 'N/A'}`, 600, 630);
+    ctx.fillText(`Roll Number: ${user?.rollNumber || 'N/A'}`, 600, 630);
 
-    // Badge
     ctx.fillStyle = '#22c55e'; ctx.font = 'bold 20px Arial';
-    ctx.fillText('✓ VERIFIED', 600, 700);
+    ctx.fillText('✓ VERIFIED ASSESSMENT RESULT', 600, 700);
 
     const link = document.createElement('a');
-    link.download = `certificate_${(result?.quizTitle || 'exam').replace(/\s+/g, '_')}.png`;
+    link.download = `Certificate_${(result?.quizTitle || 'Exam').replace(/\s+/g, '_')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }
 
-  // ─── Paper Download ───
+  // ─── Styled PDF Question Paper Generator ───
   function downloadPaper() {
     if (!result?.questions) return;
-    let text = `${result.quizTitle || 'Exam'}\nDepartment: ${result.quizDepartment || 'N/A'}\n${'='.repeat(60)}\n\n`;
-    result.questions.forEach((q, i) => {
-      text += `Q${i + 1}. ${q.text} [${q.points || 1} marks]\n`;
-      if (q.type === 'single_correct' || !q.type) {
-        q.options?.forEach((o, j) => { text += `   ${String.fromCharCode(65 + j)}) ${o}\n`; });
-        text += `   Correct: ${q.options?.[q.correctIndex] || 'N/A'}\n`;
-      } else if (q.type === 'true_false') {
-        text += `   Correct: ${q.correctIndex === 0 ? 'True' : 'False'}\n`;
-      } else {
-        text += `   Correct: ${q.correctAnswerText || 'N/A'}\n`;
-      }
-      text += '\n';
+    
+    import('jspdf').then(({ jsPDF }) => {
+      const doc = new jsPDF();
+      
+      const img = new Image();
+      img.src = '/ethnotech_academic_solutions_logo.jpg';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        
+        generateStyledPDF(doc, dataUrl);
+      };
+      img.onerror = () => {
+        generateStyledPDF(doc, null); // fallback if logo fails
+      };
     });
-
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.download = `${(result.quizTitle || 'exam').replace(/\s+/g, '_')}_paper.txt`;
-    link.href = URL.createObjectURL(blob);
-    link.click();
   }
 
-  // ─── Timer color ───
+  function generateStyledPDF(doc, logoDataUrl) {
+    let y = 20;
+
+    // Header Borders & Styling
+    doc.setDrawColor(15, 23, 42); // slate-900
+    doc.setLineWidth(1);
+    doc.rect(10, 10, 190, 277); // Outer page border
+
+    // Draw logo if exists
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, 'JPEG', 15, 15, 20, 20);
+    }
+
+    // Header text
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42);
+    doc.text('ETHNOTECH ACADEMIC SOLUTIONS', 40, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont('Helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text('Real-Time Examination & Assessment Evaluation Report', 40, 26);
+    doc.text(`Department: ${result?.quizDepartment || activeQuiz?.department || 'General'}`, 40, 31);
+
+    // Header line
+    doc.setDrawColor(203, 213, 225); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(12, 38, 198, 38);
+
+    // Student Assessment Info Box
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.rect(15, 42, 180, 42, 'F');
+    doc.rect(15, 42, 180, 42); // border
+
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text('EXAMINATION EVALUATION DETAILS', 20, 48);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Candidate Name: ${user?.name || 'Student'}`, 20, 56);
+    doc.text(`Roll Number: ${user?.rollNumber || 'N/A'}`, 20, 62);
+    doc.text(`Exam Title: ${result?.quizTitle || activeQuiz?.title || 'Exam'}`, 20, 68);
+    doc.text(`Date Evaluated: ${new Date().toLocaleDateString()}`, 20, 74);
+
+    doc.setFont('Helvetica', 'bold');
+    doc.text(`Final Score: ${result?.score} / ${result?.totalMarks} (${result?.percentage}%)`, 120, 56);
+    doc.text(`Passing Grade: ${result?.passingPercentage}%`, 120, 62);
+    
+    const isPassed = result?.passed || result?.percentage >= (result?.passingPercentage || 40);
+    doc.setTextColor(isPassed ? 22 : 225, isPassed ? 163 : 29, isPassed ? 74 : 72); // Green vs Red
+    doc.text(`RESULT STATUS: ${isPassed ? 'PASS' : 'FAIL'}`, 120, 68);
+
+    doc.setTextColor(100, 116, 139);
+    const totalViolations = (attempt?.violations?.tabSwitches || 0) + (attempt?.violations?.windowBlurs || 0) + (attempt?.violations?.fullScreenExits || 0);
+    doc.text(`Security Warnings Triggered: ${totalViolations}`, 120, 74);
+
+    // Reset styles
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('QUESTION PAPER & RESPONSES', 15, 96);
+    doc.line(15, 98, 70, 98);
+
+    y = 106;
+
+    result.questions.forEach((q, idx) => {
+      // Check page height limit to add page dynamically
+      if (y > 250) {
+        doc.addPage();
+        doc.setDrawColor(15, 23, 42);
+        doc.rect(10, 10, 190, 277); // Redraw page border
+        y = 25;
+      }
+
+      const userAns = result.answers?.find(a => a.questionIndex === idx);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      
+      const qNumText = `Q${idx + 1}. `;
+      const pointsText = ` [${q.points || 1} Marks]`;
+      doc.text(qNumText, 15, y);
+      
+      // Wrap question statement
+      const statementLines = doc.splitTextToSize(q.text, 160);
+      doc.text(statementLines, 22, y);
+      
+      y += (statementLines.length * 5);
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+
+      // Render options list for MCQ
+      if (q.type === 'single_correct' || !q.type) {
+        q.options?.forEach((opt, oi) => {
+          doc.text(`  ${String.fromCharCode(65 + oi)}) ${opt}`, 22, y);
+          y += 5;
+        });
+        
+        const correctOptText = `Correct Answer: Option ${String.fromCharCode(65 + q.correctIndex)} (${q.options?.[q.correctIndex]})`;
+        const studentOptText = userAns?.selectedIndex !== -1 && userAns?.selectedIndex !== undefined
+          ? `Your Answer: Option ${String.fromCharCode(65 + userAns.selectedIndex)} (${q.options?.[userAns.selectedIndex]})`
+          : 'Your Answer: [Not Answered]';
+
+        doc.setFont('Helvetica', 'bold');
+        doc.setTextColor(22, 163, 74); // green
+        doc.text(correctOptText, 22, y);
+        y += 5;
+
+        doc.setTextColor(userAns?.isCorrect ? 22 : 225, userAns?.isCorrect ? 163 : 29, userAns?.isCorrect ? 74 : 72);
+        doc.text(studentOptText, 22, y);
+        y += 7;
+      } else if (q.type === 'true_false') {
+        const correctOptText = `Correct Answer: ${q.correctIndex === 0 ? 'True' : 'False'}`;
+        const studentOptText = userAns?.selectedIndex !== -1 && userAns?.selectedIndex !== undefined
+          ? `Your Answer: ${userAns.selectedIndex === 0 ? 'True' : 'False'}`
+          : 'Your Answer: [Not Answered]';
+
+        doc.setFont('Helvetica', 'bold');
+        doc.setTextColor(22, 163, 74);
+        doc.text(correctOptText, 22, y);
+        y += 5;
+
+        doc.setTextColor(userAns?.isCorrect ? 22 : 225, userAns?.isCorrect ? 163 : 29, userAns?.isCorrect ? 74 : 72);
+        doc.text(studentOptText, 22, y);
+        y += 7;
+      } else {
+        // Text responses
+        const correctOptText = `Correct Answer: ${q.correctAnswerText || 'N/A'}`;
+        const studentOptText = `Your Answer: ${userAns?.submittedAnswer || '[Not Answered]'}`;
+
+        doc.setFont('Helvetica', 'bold');
+        doc.setTextColor(22, 163, 74);
+        doc.text(correctOptText, 22, y);
+        y += 5;
+
+        doc.setTextColor(userAns?.isCorrect ? 22 : 225, userAns?.isCorrect ? 163 : 29, userAns?.isCorrect ? 74 : 72);
+        doc.text(studentOptText, 22, y);
+        y += 7;
+      }
+      y += 3; // buffer gap between questions
+    });
+
+    doc.save(`${(result.quizTitle || 'Exam').replace(/\s+/g, '_')}_Paper.pdf`);
+  }
+
   const timerColor = timeLeft > 120 ? 'text-emerald-500' : timeLeft > 60 ? 'text-amber-500' : 'text-rose-500 animate-pulse';
 
   // ═══════════════════════ RENDER PHASES ═══════════════════════
 
-  // ─── Fullscreen Permission ───
-  if (launchPhase === 'fullscreen') {
+  // ─── Fullscreen Prompt Phase ───
+  if (launchPhase === 'fullscreen-prompt') {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none">
+      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none animate-fadeIn">
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-10 max-w-lg w-full flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6">
             <Monitor size={40} className="text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">Fullscreen Required</h2>
+          <h2 className="text-2xl font-bold mb-3">Launch Secure Mode</h2>
           <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-            This exam requires fullscreen mode for security. Click below to enter fullscreen and continue with the setup.
+            All devices set up. Click below to enter fullscreen lock mode and begin the countdown sequence.
           </p>
           <button onClick={handleFullscreenGrant}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm transition-all">
-            Enter Fullscreen Mode
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
+            Enter Fullscreen & Start Exam
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Webcam Permission ───
+  // ─── Webcam Permission Phase ───
   if (launchPhase === 'webcam') {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none">
+      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none animate-fadeIn">
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-10 max-w-lg w-full flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
             <Camera size={40} className="text-emerald-400" />
           </div>
           <h2 className="text-2xl font-bold mb-3">Camera & Mic Access</h2>
-          <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-            {activeQuiz?.requireWebcam && activeQuiz?.requireMic
-              ? 'This exam requires your webcam and microphone for proctoring.'
-              : activeQuiz?.requireWebcam ? 'This exam requires your webcam for proctoring.'
-              : 'This exam requires your microphone for proctoring.'}
+          <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+            This exam requires webcam and audio capture. Confirm the browser permission pop-up to show your camera stream.
           </p>
-          <video ref={videoRef} autoPlay playsInline muted className="w-48 h-36 bg-black rounded-xl mb-6 border-2 border-slate-600" />
+          
+          {/* Active local camera stream preview */}
+          <div className="w-64 h-48 bg-slate-950 rounded-2xl mb-8 overflow-hidden border-2 border-slate-700 flex items-center justify-center relative shadow-inner">
+            <video ref={videoRef} autoPlay playsInline muted className="object-cover w-full h-full" />
+            <div className="absolute top-2 right-2 flex items-center gap-1 bg-slate-900/80 px-2 py-0.5 rounded text-[9px] text-emerald-400 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> PREVIEW
+            </div>
+          </div>
+
           <button onClick={handleWebcamGrant}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm">
-            Allow Camera Access
+            className="w-full bg-emerald-55 hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
+            Allow & Start Camera
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Screenshare Permission ───
+  // ─── Screenshare Permission Phase ───
   if (launchPhase === 'screenshare') {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none">
+      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none animate-fadeIn">
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-10 max-w-lg w-full flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
             <Monitor size={40} className="text-blue-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">Screen Share Required</h2>
+          <h2 className="text-2xl font-bold mb-3">Share Entire Screen</h2>
           <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-            Share your <strong className="text-white">entire screen</strong> (not just a tab) for proctoring. Stopping screenshare will be flagged as a violation.
+            Please choose <strong className="text-white">Entire Screen</strong> in the browser prompt. Selecting a single window or tab is a security violation.
           </p>
           <button onClick={handleScreenshareGrant}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm">
-            Share Entire Screen
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
+            Configure Screen Sharing
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Countdown ───
+  // ─── Countdown Phase ───
   if (launchPhase === 'countdown') {
     return (
       <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center text-white p-6 select-none">
@@ -477,7 +728,6 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     return (
       <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col items-center justify-center font-sans p-6 select-none overflow-y-auto">
         <div className="bg-white border border-slate-200 rounded-3xl p-8 max-w-2xl w-full shadow-lg flex flex-col items-center">
-          {/* Result Header */}
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${result?.passed ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
             {result?.passed ? <CheckSquare size={40} /> : <AlertCircle size={40} />}
           </div>
@@ -486,7 +736,6 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             {result?.passed ? 'You have passed the exam!' : 'Better luck next time.'}
           </p>
 
-          {/* Score Card */}
           <div className="grid grid-cols-3 gap-4 w-full mb-6">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
               <p className="text-xs text-slate-400 font-semibold">Score</p>
@@ -502,7 +751,6 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             </div>
           </div>
 
-          {/* Action buttons */}
           <div className="flex flex-wrap gap-3 w-full">
             {result?.enableCertificate && result?.passed && (
               <button onClick={downloadCertificate}
@@ -513,7 +761,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             {result?.allowPaperDownload && result?.questions && (
               <button onClick={downloadPaper}
                 className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-5 rounded-xl text-xs flex-1 justify-center">
-                <FileText size={16} /> Download Paper
+                <FileText size={16} /> Download Paper (PDF)
               </button>
             )}
             {result?.showAnswers && result?.questions && (
@@ -524,13 +772,12 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             )}
           </div>
 
-          {/* Answer Review */}
           {showReview && result?.questions && (
             <div className="w-full mt-6 flex flex-col gap-3 max-h-[50vh] overflow-y-auto">
               {result.questions.map((q, i) => {
                 const ans = result.answers?.find(a => a.questionIndex === i);
                 return (
-                  <div key={i} className={`border rounded-xl p-4 ${ans?.isCorrect ? 'border-emerald-200 bg-emerald-50/50' : 'border-rose-200 bg-rose-50/50'}`}>
+                  <div key={i} className={`border rounded-xl p-4 text-left ${ans?.isCorrect ? 'border-emerald-200 bg-emerald-50/50' : 'border-rose-200 bg-rose-50/50'}`}>
                     <div className="flex items-start gap-2 mb-2">
                       <span className="text-xs font-bold text-slate-400">Q{i + 1}</span>
                       <p className="text-sm font-semibold text-slate-800 flex-1">{q.text}</p>
@@ -590,6 +837,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     return (
       <div className="fixed inset-0 z-45 bg-slate-50 flex flex-col font-sans overflow-hidden select-none"
         onCopy={e => e.preventDefault()} onPaste={e => e.preventDefault()} onCut={e => e.preventDefault()}>
+        
         {/* Header */}
         <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2.5">
@@ -597,12 +845,15 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             <h1 className="font-title text-xs font-bold text-slate-800 uppercase tracking-wider">{activeQuiz.title}</h1>
           </div>
           <div className="flex items-center gap-4">
+            
+            {/* Live Camera Feed */}
             {webcamStreamRef.current && (
               <div className="relative w-16 h-12 bg-black rounded-lg overflow-hidden border-2 border-slate-200">
                 <video ref={videoRef} autoPlay playsInline muted className="object-cover w-full h-full" />
                 <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
               </div>
             )}
+
             <div className={`flex items-center gap-2 bg-slate-100 border border-slate-200/80 px-3 py-1.5 rounded-lg font-bold text-sm ${timerColor}`}>
               <Clock size={14} />
               <span>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</span>
@@ -619,7 +870,8 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
 
         {/* Main Canvas */}
         <main className="flex-1 flex flex-col md:flex-row max-w-[1400px] w-full mx-auto p-4 gap-4 overflow-hidden">
-          {/* Question */}
+          
+          {/* Question Box */}
           <section className="flex-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col overflow-y-auto">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-5">
               <span className="text-xs font-bold text-primary uppercase tracking-widest">
@@ -683,7 +935,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
             </div>
           </section>
 
-          {/* Sidebar */}
+          {/* Sidebar Navigation */}
           <aside className="w-full md:w-[280px] bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-4 overflow-y-auto">
             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Navigation</h3>
             <div className="grid grid-cols-5 gap-2">
@@ -701,7 +953,6 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
               })}
             </div>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-2 text-[9px] text-slate-500">
               <span className="flex items-center gap-1"><span className="w-3 h-3 bg-primary rounded" /> Current</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 bg-emerald-500 rounded" /> Answered</span>
@@ -731,7 +982,7 @@ export default function LiveQuizPlayer({ data, forms, setForm, api, action, sock
     );
   }
 
-  // ─── Quiz Listing ───
+  // ─── Quiz Listing View ───
   return (
     <div className="flex flex-col gap-6">
       <div className="bg-bgSecondary border border-borderCool rounded-xl p-5 shadow-sm">

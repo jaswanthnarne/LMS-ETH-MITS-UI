@@ -19,7 +19,7 @@ const STATUS_CONFIG = {
   ended:     { label: 'Ended',     bg: 'bg-danger/10',    text: 'text-danger' }
 };
 
-export default function QuizManagement({ data, forms, setForm, api, action, setState, socket }) {
+export default function QuizManagement({ data, forms, setForm, api, action, setState, socket, startProctoring }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuizId, setEditingQuizId] = useState(null);
   const [batchFilter, setBatchFilter] = useState('');
@@ -361,7 +361,12 @@ export default function QuizManagement({ data, forms, setForm, api, action, setS
                         <RotateCcw size={13} /> Reopen
                       </button>
                     )}
-
+                    {status !== 'draft' && (
+                      <button className="flex items-center gap-1.5 text-xs font-semibold bg-[#0f172a] text-white hover:bg-slate-900 px-3.5 py-2 rounded-lg shadow-sm"
+                        onClick={() => startProctoring(quiz._id)}>
+                        <Shield size={13} /> Proctor Room
+                      </button>
+                    )}
                     <button className="flex items-center gap-1.5 text-xs font-semibold bg-bgSecondary border border-borderCool hover:bg-bgHover text-textPrimary px-3.5 py-2 rounded-lg"
                       onClick={async () => {
                         const a = await api.get(`/api/quiz/${quiz._id}/attempts`);

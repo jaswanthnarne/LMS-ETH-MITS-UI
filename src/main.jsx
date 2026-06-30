@@ -18,6 +18,7 @@ import BatchManagement from './pages/admin/BatchManagement';
 import TaskManagement from './pages/admin/TaskManagement';
 import SubmissionReviews from './pages/admin/SubmissionReviews';
 import QuizManagement from './pages/admin/QuizManagement';
+import ProctorDashboard from './pages/admin/ProctorDashboard';
 import AdminLeetcode from './pages/admin/AdminLeetcode';
 
 // Import Student Pages
@@ -497,6 +498,7 @@ function AppContent() {
   const [isInitializing, setIsInitializing] = useState(!!localStorage.getItem('mits_lms_token'));
   const [showPassword, setShowPassword] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [proctorQuizId, setProctorQuizId] = useState(() => localStorage.getItem('mits_proctor_quiz_id'));
 
   const prefix = user?.role === 'admin' ? '/admin/root/console' : '';
   let rawPath = location.pathname;
@@ -505,7 +507,7 @@ function AppContent() {
   }
   const path = rawPath.replace(/^\/+/, '') || 'dashboard';
 
-  const validPaths = ['dashboard', 'marks', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile', 'submissions', 'todo'];
+  const validPaths = ['dashboard', 'marks', 'attendance', 'checkin', 'leaves', 'batches', 'tasks', 'reviews', 'quizzes', 'leetcode', 'leaderboard', 'chat', 'profile', 'submissions', 'todo', 'proctor-dashboard'];
   const isNotFound = location.pathname !== '/' && !validPaths.includes(path);
   const active = path;
 
@@ -1010,10 +1012,33 @@ function AppContent() {
 
       {active === 'quizzes' && (
         user.role === 'admin' ? (
-          <QuizManagement data={state} forms={forms} setForm={setForm} api={api} action={action} setState={setState} socket={socket} />
+          <QuizManagement 
+            data={state} 
+            forms={forms} 
+            setForm={setForm} 
+            api={api} 
+            action={action} 
+            setState={setState} 
+            socket={socket} 
+            startProctoring={(quizId) => {
+              localStorage.setItem('mits_proctor_quiz_id', quizId);
+              setProctorQuizId(quizId);
+              setActive('proctor-dashboard');
+            }}
+          />
         ) : (
           <LiveQuizPlayer data={state} forms={forms} setForm={setForm} api={api} action={action} socket={socket} user={user} />
         )
+      )}
+
+      {active === 'proctor-dashboard' && user.role === 'admin' && (
+        <ProctorDashboard 
+          quizId={proctorQuizId} 
+          goBack={() => setActive('quizzes')} 
+          api={api} 
+          action={action} 
+          socket={socket} 
+        />
       )}
 
       {active === 'leetcode' && (
