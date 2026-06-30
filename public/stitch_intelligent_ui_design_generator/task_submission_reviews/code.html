@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MITS LMS - Task Submission Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Outfit:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "primary-container": "#0052cc",
+                      "danger": "#ef4444",
+                      "outline": "#737685",
+                      "on-background": "#191c1e",
+                      "accent-purple": "#8b5cf6",
+                      "surface-variant": "#e0e3e5",
+                      "secondary-fixed": "#e9ddff",
+                      "on-surface-variant": "#434654",
+                      "surface-container-highest": "#e0e3e5",
+                      "inverse-surface": "#2d3133",
+                      "primary-fixed": "#dae2ff",
+                      "slate-500": "#64748b",
+                      "on-tertiary-container": "#5debaf",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#fffbff",
+                      "tertiary-fixed": "#6ffbbe",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f2f4f6",
+                      "primary-fixed-dim": "#b2c5ff",
+                      "tertiary": "#004e33",
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "slate-900": "#0f172a",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface": "#f7f9fb",
+                      "surface-tint": "#0c56d0",
+                      "on-primary-fixed": "#001848",
+                      "secondary-container": "#8455ef",
+                      "tertiary-container": "#006846",
+                      "on-secondary-fixed-variant": "#5516be",
+                      "border-subtle": "#e2e8f0",
+                      "background": "#f7f9fb",
+                      "on-tertiary-fixed": "#002113",
+                      "on-error": "#ffffff",
+                      "warning": "#f59e0b",
+                      "on-surface": "#191c1e",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#0040a2",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-container": "#eceef0",
+                      "outline-variant": "#c3c6d6",
+                      "surface-container-high": "#e6e8ea",
+                      "on-primary-container": "#c4d2ff",
+                      "info": "#0052cc",
+                      "on-secondary-fixed": "#23005c",
+                      "success": "#10b981",
+                      "inverse-primary": "#b2c5ff",
+                      "primary": "#003d9b",
+                      "on-error-container": "#93000a",
+                      "surface-bright": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "secondary-fixed-dim": "#d0bcff",
+                      "secondary": "#6b38d4"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "280px",
+                      "stack-sm": "0.5rem",
+                      "stack-lg": "2rem",
+                      "gutter": "1.5rem",
+                      "container-max": "1440px",
+                      "stack-md": "1rem",
+                      "margin-page": "2rem"
+              },
+              "fontFamily": {
+                      "headline-sm": [
+                              "Outfit"
+                      ],
+                      "code-md": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Outfit"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Outfit"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "code-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased overflow-hidden h-screen flex">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-border-subtle dark:border-outline-variant shadow-sm dark:shadow-none z-50 flex flex-col hidden md:flex">
+<!-- Header -->
+<div class="p-6 flex items-center gap-4 border-b border-border-subtle">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">MITS LMS</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Learning Management System</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim border-l-4 border-primary font-bold bg-surface-container-low dark:bg-surface-container-high rounded-r-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span>Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+<span>Exams</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+<span>LeetCode Tracker</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span>Chat</span>
+<span class="ml-auto bg-danger text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<!-- CTA & Footer -->
+<div class="p-4 border-t border-border-subtle">
+<button class="w-full bg-primary-container text-on-primary py-2 px-4 rounded-lg font-label-md text-label-md shadow-sm hover:scale-95 transition-transform duration-150 mb-4">Check-in Now</button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-[280px] h-screen bg-background overflow-hidden relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 w-full px-gutter bg-surface dark:bg-inverse-surface border-b border-border-subtle dark:border-outline-variant shadow-sm z-40 sticky top-0 bg-surface/80 backdrop-blur-md">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed hidden lg:block">Task Review: Final Year Project UI</h2>
+<!-- Search (Search on left) -->
+<div class="relative w-64 lg:ml-8">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-1.5 bg-surface-container-lowest border border-border-subtle rounded-lg font-body-sm text-body-sm focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-colors" placeholder="Search submissions..." type="text"/>
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<nav class="hidden lg:flex items-center gap-6 mr-4 font-label-md text-label-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Reports</a>
+<a class="text-primary border-b-2 border-primary pb-1" href="#">Logs</a>
+</nav>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="apps">apps</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container-high overflow-hidden border border-border-subtle cursor-pointer ml-2">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A professional headshot of an instructor in a modern office setting. High quality, well-lit, corporate style portrait with a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFXut-aYgF5_9Q4m3ZxrGutr0sg7Y0jtVnDHwbHxeto01V4sVNNcZKrg2egp2FJNDzyzp__mPtmNE7hrshdG9llPalfHf-KEJDQkcIXosOikXUm2tFt2QIuBGubL8P74ben-nJsLFaQEfeIL5UNSLtf0KcT2vuFecabZSPRsPoPUx-BVkFZEuTbj4OgznDcfTxetCRj68NQtatXBev0Z5-AGTUC4quLjxzTUPvmTk_b948BuaBhf0F"/>
+</div>
+</div>
+</header>
+<!-- Split Pane Layout -->
+<div class="flex-1 flex overflow-hidden p-4 gap-4">
+<!-- Left Pane: Student Roster -->
+<div class="w-1/4 min-w-[250px] bg-surface-container-lowest border border-border-subtle rounded-xl flex flex-col shadow-sm">
+<div class="p-4 border-b border-border-subtle flex justify-between items-center bg-surface-bright rounded-t-xl">
+<h3 class="font-label-md text-label-md text-on-surface">Submissions (42)</h3>
+<button class="text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+<!-- Roster Item 1 (Active) -->
+<div class="p-3 rounded-lg bg-surface-container-low border border-primary/20 flex flex-col gap-2 cursor-pointer relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start pl-2">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Rahul Sharma</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant text-[11px]">CS-A • 21B81A0501</span>
+</div>
+<span class="bg-warning/10 text-warning px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-warning/20">Needs Review</span>
+</div>
+</div>
+<!-- Roster Item 2 -->
+<div class="p-3 rounded-lg hover:bg-surface-container-lowest border border-transparent hover:border-border-subtle flex flex-col gap-2 cursor-pointer transition-all">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Priya Patel</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant text-[11px]">CS-B • 21B81A0542</span>
+</div>
+<span class="bg-success/10 text-success px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-success/20">Graded</span>
+</div>
+</div>
+<!-- Roster Item 3 -->
+<div class="p-3 rounded-lg hover:bg-surface-container-lowest border border-transparent hover:border-border-subtle flex flex-col gap-2 cursor-pointer transition-all">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Amit Kumar</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant text-[11px]">CS-A • 21B81A0512</span>
+</div>
+<span class="bg-danger/10 text-danger px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-danger/20">Resubmit</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Center Pane: Submission Content -->
+<div class="flex-1 bg-surface-container-lowest border border-border-subtle rounded-xl flex flex-col shadow-sm overflow-hidden">
+<!-- Content Header -->
+<div class="p-4 border-b border-border-subtle bg-surface-bright flex justify-between items-center">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Final Project Repository Link &amp; Setup Guide</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                            Submitted on Oct 24, 2023 at 11:45 PM (On Time)
+                        </p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 border border-border-subtle rounded-lg text-on-surface hover:bg-surface-container-low transition-colors font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span> Download All
+                        </button>
+</div>
+</div>
+<!-- Content Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+<!-- Text Submission -->
+<div class="bg-white border border-border-subtle rounded-lg p-5 mb-6 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+<h4 class="font-label-md text-label-md text-on-surface mb-3 flex items-center gap-2 border-b border-border-subtle pb-2">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+                            Student Notes
+                        </h4>
+<div class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+<p>Here is the link to my GitHub repository for the final project. I have included the setup instructions in the README.md file as requested. The database schema has been updated to reflect the new requirements discussed in the last lab session.</p>
+</div>
+</div>
+<!-- Link Submission -->
+<div class="bg-white border border-border-subtle rounded-lg p-5 mb-6 shadow-[0_10px_30px_rgba(15,23,42,0.04)] border-l-4 border-l-accent-purple">
+<h4 class="font-label-md text-label-md text-on-surface mb-3 flex items-center gap-2 border-b border-border-subtle pb-2">
+<span class="material-symbols-outlined text-accent-purple" data-icon="link">link</span>
+                            Repository Link
+                        </h4>
+<a class="flex items-center gap-3 p-3 bg-surface-container-low rounded border border-border-subtle hover:border-primary-container transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary-container" data-icon="open_in_new">open_in_new</span>
+<span class="font-code-md text-code-md text-primary-container underline-offset-2 group-hover:underline">github.com/rahulsharma/mits-lms-final-project</span>
+</a>
+</div>
+<!-- Code Snippet Preview -->
+<div class="bg-white border border-border-subtle rounded-lg overflow-hidden shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+<div class="bg-slate-900 px-4 py-2 flex justify-between items-center">
+<span class="font-code-md text-code-md text-slate-300 text-[12px]">docker-compose.yml</span>
+<button class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span></button>
+</div>
+<div class="p-4 bg-slate-50 font-code-md text-code-md text-slate-800 text-[13px] overflow-x-auto">
+<pre><code>version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret</code></pre>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Pane: Grading & Evaluation -->
+<div class="w-[320px] bg-surface-container-lowest border border-border-subtle rounded-xl flex flex-col shadow-sm">
+<div class="p-4 border-b border-border-subtle bg-surface-bright rounded-t-xl">
+<h3 class="font-label-md text-label-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="grading">grading</span>
+                        Evaluation
+                    </h3>
+</div>
+<div class="flex-1 p-5 overflow-y-auto space-y-6">
+<!-- Score Input -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2">Score</label>
+<div class="flex items-center gap-2">
+<input class="w-20 px-3 py-2 border border-border-subtle rounded-lg font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 text-right" type="number" value="85"/>
+<span class="font-label-md text-label-md text-on-surface-variant">/ 100</span>
+</div>
+</div>
+<!-- Status Dropdown -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2">Submission Status</label>
+<select class="w-full px-3 py-2 border border-border-subtle rounded-lg font-body-sm text-body-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 bg-white">
+<option value="needs_review">Needs Review</option>
+<option selected="" value="graded">Graded - Acceptable</option>
+<option value="resubmit">Needs Resubmission</option>
+</select>
+</div>
+<!-- Feedback Area -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2">Instructor Feedback</label>
+<div class="border border-border-subtle rounded-lg overflow-hidden focus-within:border-primary-container focus-within:ring-1 focus-within:ring-primary-container/50 transition-all">
+<!-- Toolbar -->
+<div class="bg-surface-container-low px-2 py-1 flex gap-1 border-b border-border-subtle">
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded"><span class="material-symbols-outlined text-[16px]" data-icon="format_bold">format_bold</span></button>
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded"><span class="material-symbols-outlined text-[16px]" data-icon="format_italic">format_italic</span></button>
+<div class="w-px h-4 bg-border-subtle my-auto mx-1"></div>
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded"><span class="material-symbols-outlined text-[16px]" data-icon="format_list_bulleted">format_list_bulleted</span></button>
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded"><span class="material-symbols-outlined text-[16px]" data-icon="code">code</span></button>
+</div>
+<textarea class="w-full p-3 border-none resize-none font-body-sm text-body-sm bg-surface-container-lowest focus:ring-0" placeholder="Provide constructive feedback..." rows="6">Good implementation of the core requirements. The repository structure is clean. 
+
+However, please check line 12 in your docker-compose file; exposing the database port publicly might be a security concern for production deployment. Other than that, solid work.</textarea>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-4 border-t border-border-subtle bg-surface-bright rounded-b-xl flex gap-3">
+<button class="flex-1 px-4 py-2 border border-border-subtle text-primary font-label-sm text-label-sm rounded-lg hover:bg-surface-container-low transition-colors">Save Draft</button>
+<button class="flex-1 px-4 py-2 bg-primary-container text-on-primary font-label-sm text-label-sm rounded-lg hover:scale-95 transition-transform duration-150 shadow-sm">Submit Grade</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

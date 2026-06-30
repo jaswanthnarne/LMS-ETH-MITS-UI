@@ -10,6 +10,7 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
   function startCreateTask() {
     setForm('task', 'title', '');
     setForm('task', 'batch', '');
+    setForm('task', 'batches', []);
     setForm('task', 'dueDate', '');
     setForm('task', 'maxScore', 100);
     setForm('task', 'leetcodeUrl', '');
@@ -21,6 +22,7 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
   function startEditingTask(task) {
     setForm('task', 'title', task.title);
     setForm('task', 'batch', task.batch?._id || task.batch);
+    setForm('task', 'batches', task.batches || (task.batch ? [task.batch?._id || task.batch] : []));
     setForm('task', 'dueDate', task.dueDate ? task.dueDate.slice(0, 10) : '');
     setForm('task', 'maxScore', task.maxScore || 100);
     setForm('task', 'leetcodeUrl', task.leetcodeUrl || '');
@@ -56,7 +58,8 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
   const filteredTasks = data.tasks.filter((task) => {
     if (!batchFilter) return true;
     const taskBatchId = task.batch?._id || task.batch;
-    return String(taskBatchId) === String(batchFilter);
+    const taskBatches = task.batches || [];
+    return String(taskBatchId) === String(batchFilter) || taskBatches.some(b => String(b?._id || b) === String(batchFilter));
   });
 
   return (
@@ -97,7 +100,9 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded uppercase tracking-wider">
-                      {task.batch ? `${task.batch.name}` : 'Cohort'}
+                      {task.batches && task.batches.length > 0 
+                        ? task.batches.map(b => b.name).join(', ') 
+                        : task.batch ? `${task.batch.name}` : 'Cohort'}
                     </span>
                     {task.batch?.college && (
                       <span className="text-[10px] font-medium text-textMuted">
@@ -157,13 +162,30 @@ export default function TaskManagement({ data, forms, setForm, api, action }) {
           <Field placeholder="Task Title" value={forms.task.title} onChange={(value) => setForm('task', 'title', value)} required />
           
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-textMuted">Select Batch / Cohort</span>
-            <Select
-              value={forms.task.batch}
-              onChange={(value) => setForm('task', 'batch', value)}
-              options={[['', 'Select Batch / Cohort'], ...data.batches.map((batch) => [batch._id, batch.name])]}
-              required
-            />
+            <span className="text-xs font-semibold text-textMuted">Assign Batches / Cohorts</span>
+            <div className="grid grid-cols-2 gap-2 border border-borderCool p-3 rounded-lg max-h-[120px] overflow-y-auto bg-bgPrimary">
+              {data.batches.map((batch) => {
+                const isChecked = (forms.task.batches || []).includes(batch._id);
+                return (
+                  <label key={batch._id} className="flex items-center gap-2 text-xs text-textPrimary cursor-pointer hover:text-primary transition-colors">
+                    <input 
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        const current = forms.task.batches || [];
+                        const next = e.target.checked 
+                          ? [...current, batch._id]
+                          : current.filter(id => id !== batch._id);
+                        setForm('task', 'batches', next);
+                        setForm('task', 'batch', next[0] || '');
+                      }}
+                      className="rounded border-borderCool text-primary focus:ring-primary"
+                    />
+                    {batch.name}
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

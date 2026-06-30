@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Quiz Player - MITS LMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-tertiary": "#ffffff",
+                "primary-container": "#0052cc",
+                "danger": "#ef4444",
+                "outline": "#737685",
+                "on-background": "#191c1e",
+                "accent-purple": "#8b5cf6",
+                "surface-variant": "#e0e3e5",
+                "secondary-fixed": "#e9ddff",
+                "on-surface-variant": "#434654",
+                "surface-container-highest": "#e0e3e5",
+                "inverse-surface": "#2d3133",
+                "primary-fixed": "#dae2ff",
+                "slate-500": "#64748b",
+                "on-tertiary-container": "#5debaf",
+                "error": "#ba1a1a",
+                "on-secondary-container": "#fffbff",
+                "tertiary-fixed": "#6ffbbe",
+                "tertiary-fixed-dim": "#4edea3",
+                "error-container": "#ffdad6",
+                "surface-container-low": "#f2f4f6",
+                "primary-fixed-dim": "#b2c5ff",
+                "tertiary": "#004e33",
+                "on-secondary": "#ffffff",
+                "on-primary": "#ffffff",
+                "slate-900": "#0f172a",
+                "inverse-on-surface": "#eff1f3",
+                "surface": "#f7f9fb",
+                "surface-tint": "#0c56d0",
+                "on-primary-fixed": "#001848",
+                "secondary-container": "#8455ef",
+                "tertiary-container": "#006846",
+                "on-secondary-fixed-variant": "#5516be",
+                "border-subtle": "#e2e8f0",
+                "background": "#f7f9fb",
+                "on-tertiary-fixed": "#002113",
+                "on-error": "#ffffff",
+                "warning": "#f59e0b",
+                "on-surface": "#191c1e",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed-variant": "#0040a2",
+                "on-tertiary-fixed-variant": "#005236",
+                "surface-container": "#eceef0",
+                "outline-variant": "#c3c6d6",
+                "surface-container-high": "#e6e8ea",
+                "on-primary-container": "#c4d2ff",
+                "info": "#0052cc",
+                "on-secondary-fixed": "#23005c",
+                "success": "#10b981",
+                "inverse-primary": "#b2c5ff",
+                "primary": "#003d9b",
+                "on-error-container": "#93000a",
+                "surface-bright": "#f7f9fb",
+                "surface-dim": "#d8dadc",
+                "secondary-fixed-dim": "#d0bcff",
+                "secondary": "#6b38d4"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "sidebar-width": "280px",
+                "stack-sm": "0.5rem",
+                "stack-lg": "2rem",
+                "gutter": "1.5rem",
+                "container-max": "1440px",
+                "stack-md": "1rem",
+                "margin-page": "2rem"
+        },
+        "fontFamily": {
+                "headline-sm": [
+                        "Outfit"
+                ],
+                "code-md": [
+                        "JetBrains Mono"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "label-md": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Outfit"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "label-sm": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Outfit"
+                ],
+                "body-sm": [
+                        "Inter"
+                ],
+                "display-lg": [
+                        "Outfit"
+                ]
+        },
+        "fontSize": {
+                "headline-sm": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "code-md": [
+                        "14px",
+                        {
+                                "lineHeight": "22px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-md": [
+                        "14px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-sm": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark-glass {
+    background: rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+  }
+  
+  .ambient-shadow {
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  }
+  
+  .progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md h-screen flex flex-col overflow-hidden">
+<!-- Top Bar (Transactional/Focused - No standard Nav) -->
+<header class="flex justify-between items-center h-16 w-full px-gutter bg-surface/80 backdrop-blur-md border-b border-border-subtle shadow-sm z-40 shrink-0">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md font-black text-primary">Advanced Data Structures Quiz</h1>
+<span class="bg-primary/10 text-primary px-2 py-1 rounded font-label-sm text-label-sm uppercase tracking-wider">Live</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-headline-sm text-headline-sm">240</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">PTS</span>
+</div>
+<div class="flex items-center gap-3 bg-error-container/30 px-4 py-2 rounded-lg border border-danger/20">
+<span class="material-symbols-outlined text-danger">timer</span>
+<span class="font-code-md text-code-md font-bold text-danger">00:45</span>
+</div>
+<button class="text-on-surface-variant hover:text-danger transition-colors" title="Exit Quiz">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Quiz Area -->
+<div class="flex-1 flex flex-col p-margin-page overflow-y-auto">
+<!-- Progress Indicator -->
+<div class="flex items-center gap-4 mb-8">
+<div class="flex-1 bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[40%] rounded-full transition-all duration-500"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap">Question 4 of 10</span>
+</div>
+<!-- Question Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle ambient-shadow p-8 mb-8 flex-1 flex flex-col">
+<div class="flex items-start justify-between mb-6">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">What is the time complexity of searching for an element in a balanced Binary Search Tree (BST)?</h2>
+<span class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full font-label-sm text-label-sm">Medium</span>
+</div>
+<div class="font-code-md text-code-md bg-slate-900 text-slate-50 p-6 rounded-lg mb-8 overflow-x-auto">
+<pre><code>// Assume tree is perfectly balanced
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+};
+// Searching implementation...</code></pre>
+</div>
+<!-- Options Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto">
+<button class="glass-effect relative p-6 rounded-xl border border-border-subtle text-left group hover:border-primary transition-all duration-200 active:scale-95 flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm group-hover:bg-primary/10 group-hover:text-primary transition-colors">A</div>
+<span class="font-body-lg text-body-lg">O(1)</span>
+</button>
+<button class="glass-effect relative p-6 rounded-xl border-2 border-primary bg-primary/5 text-left group transition-all duration-200 flex items-center gap-4 shadow-[0_0_15px_rgba(0,82,204,0.15)]">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center font-headline-sm text-headline-sm">B</div>
+<span class="font-body-lg text-body-lg text-primary font-medium">O(log n)</span>
+<span class="material-symbols-outlined text-primary ml-auto" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<button class="glass-effect relative p-6 rounded-xl border border-border-subtle text-left group hover:border-primary transition-all duration-200 active:scale-95 flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm group-hover:bg-primary/10 group-hover:text-primary transition-colors">C</div>
+<span class="font-body-lg text-body-lg">O(n)</span>
+</button>
+<button class="glass-effect relative p-6 rounded-xl border border-border-subtle text-left group hover:border-primary transition-all duration-200 active:scale-95 flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm group-hover:bg-primary/10 group-hover:text-primary transition-colors">D</div>
+<span class="font-body-lg text-body-lg">O(n log n)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Side Panel: Leaderboard & Rank -->
+<div class="w-[320px] bg-surface-container-lowest border-l border-border-subtle flex flex-col shrink-0">
+<!-- Current Rank Widget -->
+<div class="p-6 border-b border-border-subtle bg-slate-900 text-on-primary relative overflow-hidden">
+<!-- Abstract dark background graphic -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 100% 0%, #8b5cf6 0%, transparent 50%);"></div>
+<h3 class="font-label-sm text-label-sm text-slate-400 uppercase tracking-wider mb-2 relative z-10">Your Live Rank</h3>
+<div class="flex items-baseline gap-2 relative z-10">
+<span class="font-display-lg text-display-lg font-black text-on-primary">#12</span>
+<span class="font-body-sm text-body-sm text-slate-400">/ 156</span>
+</div>
+<div class="flex items-center gap-1 mt-2 text-success font-label-sm text-label-sm relative z-10">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>Up 3 spots</span>
+</div>
+</div>
+<!-- Leaderboard -->
+<div class="flex-1 flex flex-col p-6 overflow-y-auto">
+<h3 class="font-headline-sm text-headline-sm mb-4">Top 5 Leaders</h3>
+<div class="flex flex-col gap-3">
+<!-- Rank 1 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-high border border-warning/30 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-warning"></div>
+<div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center font-bold text-sm">1</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small, professional headshot photo of a male student looking confident in a well-lit academic setting. The lighting is soft and neutral." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4RywBTTdx1r66JvYbdjuJIZ1-SjnzGa1Bt7WWgHWpOnpX4voTMe3FSYN21pizc4BYrr0Lu06GNgASNNXrT8USygjCpBxk0wPs1qzA67dOJ9GwDJZ_YRRsRvMdOVipWaroeL_x_KSXpq7YdRxN2Gr3RiEePVfk39ff63_74qIVDp0NXgLnyaN9L_W9mNK6qIlY2O1MVi8_ZWNsFPyEkTx0_DTvcdeE0s9NL8cxCMtDwUZVoRgUihMI"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md truncate">Rahul Sharma</p>
+<p class="font-label-sm text-label-sm text-warning">850 pts</p>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container border border-border-subtle relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
+<div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">2</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small, professional headshot photo of a female student smiling subtly in a modern library. The lighting is soft and natural." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDBa9tHsKKMiov22W1afJ8HNPITw6byT6QTprQFtbd0Vc-iSv3JkprZbn4xCIUTJ_i__7OHGFRbrBcU0FqOSXCowm5TY8w1zxwavowqRwRVkVt_nn3y_RrvqTrOdgv0CeWjuGQ9PwLZTL0Oscj2G7O6f5FSEp8IfeYLlOjUHkiabI4uvSeEW8SPm7C8w6TKomgNWGnkjJxOAD2g5jzq2NI4Fa5xqj8XvK9O6BDPLA1OKjVgAkPgAyL"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md truncate">Priya Patel</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">820 pts</p>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container border border-border-subtle relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-accent-purple/50"></div>
+<div class="w-8 h-8 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center font-bold text-sm">3</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small, professional headshot photo of a male student with glasses in a tech lab environment. Bright, modern lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjEJHmliLNXhArfUMbqF_gk0V8PrWYJ6a0dsF5VMC7eZTOSyxVzhUn-1YOjS09hltNkl5xGH5vXLEXy6WI0tyddzJKsOyAp9YnAowS-LtSCj3rJzFrrepmDTyR-nc_myIqoIglSVv1rHLnAWy_ZO_3mzy8oz5hZV8lgDH4wb8ugfBowP3hm87r65cbO4nBEXMcIz_v3J-Vu_GEhJvWkzEBhq1u5O--Bqn6RwvKy682EM6PfMysEQGN"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md truncate">Amit Kumar</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">790 pts</p>
+</div>
+</div>
+<!-- Rank 4 -->
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors">
+<div class="w-8 h-8 flex items-center justify-center font-label-md text-label-md text-outline">4</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<span class="material-symbols-outlined text-outline absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">person</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md truncate">Neha Singh</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">740 pts</p>
+</div>
+</div>
+<!-- Rank 5 -->
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors">
+<div class="w-8 h-8 flex items-center justify-center font-label-md text-label-md text-outline">5</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant shrink-0">
+<span class="material-symbols-outlined text-outline absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">person</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md truncate">Vikram Reddy</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">710 pts</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

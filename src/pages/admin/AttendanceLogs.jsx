@@ -8,36 +8,40 @@ export default function AttendanceLogs({ data, forms, setForm, api, action, refr
   const [actionMode, setActionMode] = useState(''); // '' | 'view' | 'take' | 'edit'
   const [isEditing, setIsEditing] = useState(false);
   const [editRecords, setEditRecords] = useState({}); // studentId -> status
+  const [loadedKey, setLoadedKey] = useState('');
 
   // Sync editRecords when data changes and we are in take/edit mode
   useEffect(() => {
     const selectedBatchId = forms.filters.batch;
-    if (!selectedBatchId) return;
-
-    if (actionMode === 'take') {
-      const initial = {};
-      records.forEach((item) => {
-        const studentId = item.student?._id;
-        // Default unmarked ('') students to 'Ab' when taking attendance
-        const status = item.status || 'Ab';
-        initial[studentId] = status;
-      });
-      setEditRecords(initial);
-      setIsEditing(true);
-    } else if (actionMode === 'edit') {
-      const initial = {};
-      records.forEach((item) => {
-        const studentId = item.student?._id;
-        // Preserve unmarked ('') students as-is when editing attendance
-        const status = item.status || '';
-        initial[studentId] = status;
-      });
-      setEditRecords(initial);
-      setIsEditing(true);
-    } else {
+    if (!selectedBatchId || !actionMode) {
       setIsEditing(false);
+      setEditRecords({});
+      setLoadedKey('');
+      return;
     }
-  }, [data.attendance, actionMode, forms.filters.batch]);
+
+    const currentKey = `${actionMode}-${selectedBatchId}-${forms.filters.date}-${records.length}`;
+    if (currentKey === loadedKey) return; // Already loaded this dataset
+
+    if (records.length > 0) {
+      const initial = {};
+      records.forEach((item) => {
+        const studentId = item.student?._id;
+        if (studentId) {
+          let status = '';
+          if (actionMode === 'take') {
+            status = item.status || 'Ab';
+          } else if (actionMode === 'edit') {
+            status = item.status || '';
+          }
+          initial[studentId] = status;
+        }
+      });
+      setEditRecords(initial);
+      setIsEditing(actionMode === 'take' || actionMode === 'edit');
+      setLoadedKey(currentKey);
+    }
+  }, [records, actionMode, forms.filters.batch, forms.filters.date, loadedKey]);
 
   function handleStatusChange(studentId, status) {
     setEditRecords((prev) => ({ ...prev, [studentId]: status }));

@@ -918,6 +918,25 @@ function AppContent() {
     );
   }
 
+  const params = new URLSearchParams(window.location.search);
+  const isQuizTaker = params.get('quizTaker') === 'true';
+  const takerQuizId = params.get('quizId');
+
+  if (isQuizTaker && takerQuizId) {
+    return (
+      <LiveQuizPlayer 
+        data={state} 
+        forms={forms} 
+        setForm={setForm} 
+        api={api} 
+        action={action} 
+        socket={socket} 
+        user={user} 
+        forceActiveQuizId={takerQuizId} 
+      />
+    );
+  }
+
   return (
     <Layout user={user} active={active} setActive={setActive} refresh={refresh} logout={logout} loading={loading} colleges={state.colleges} api={api} action={action} data={state} unreadChatCount={unreadChatCount}>
       {notice && <Notice text={notice} />}
@@ -982,7 +1001,7 @@ function AppContent() {
         user.role === 'admin' ? (
           <QuizManagement data={state} forms={forms} setForm={setForm} api={api} action={action} setState={setState} socket={socket} />
         ) : (
-          <LiveQuizPlayer data={state} forms={forms} setForm={setForm} api={api} action={action} />
+          <LiveQuizPlayer data={state} forms={forms} setForm={setForm} api={api} action={action} socket={socket} user={user} />
         )
       )}
 

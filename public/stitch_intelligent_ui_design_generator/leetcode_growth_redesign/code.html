@@ -1,0 +1,316 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LeetCode Logs - LMS Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#d0bcff",
+                        "on-secondary-fixed": "#23005c",
+                        "secondary": "#6b38d4",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "warning": "#f59e0b",
+                        "on-surface-variant": "#434654",
+                        "background": "#f7f9fb",
+                        "slate-900": "#0f172a",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "secondary-container": "#8455ef",
+                        "surface-dim": "#d8dadc",
+                        "surface-container": "#eceef0",
+                        "outline-variant": "#c3c6d6",
+                        "danger": "#ef4444",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "outline": "#737685",
+                        "on-surface": "#191c1e",
+                        "info": "#0052cc",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary": "#004e33",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "inverse-on-surface": "#eff1f3",
+                        "success": "#10b981",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary-container": "#006846",
+                        "secondary-fixed": "#e9ddff",
+                        "surface-bright": "#f7f9fb",
+                        "accent-purple": "#8b5cf6",
+                        "on-primary-container": "#c4d2ff",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#0c56d0",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-primary": "#b2c5ff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#fffbff",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-fixed": "#dae2ff",
+                        "on-tertiary-container": "#5debaf",
+                        "border-subtle": "#e2e8f0",
+                        "inverse-surface": "#2d3133",
+                        "primary-container": "#0052cc",
+                        "on-primary-fixed": "#001848",
+                        "surface-container-highest": "#e0e3e5",
+                        "slate-500": "#64748b",
+                        "primary": "#003d9b",
+                        "surface-container-low": "#f2f4f6",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "stack-lg": "2rem",
+                        "container-max": "1440px",
+                        "margin-page": "2rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "sidebar-width": "280px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Outfit"],
+                        "headline-sm": ["Outfit"],
+                        "headline-lg": ["Outfit"],
+                        "body-sm": ["Inter"],
+                        "code-md": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Outfit"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "code-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .shadow-ambient { box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
+        .heatmap-cell { width: 12px; height: 12px; border-radius: 2px; }
+        .level-0 { background-color: #ebedf0; }
+        .level-1 { background-color: #9be9a8; }
+        .level-2 { background-color: #40c463; }
+        .level-3 { background-color: #30a14e; }
+        .level-4 { background-color: #216e39; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface-container-lowest dark:bg-slate-900 fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex flex-col h-full py-stack-lg z-50 hidden md:flex">
+<div class="px-stack-lg mb-stack-lg">
+<div class="flex items-center gap-3 mb-2">
+<img class="w-8 h-8 object-contain" data-alt="Abstract minimal geometric logo showing two interlocking rings in primary blue and dark slate, representing MITS and Ethnotech collaboration in a modern tech-forward style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsWFvsWzkBLIjhCmkDYXsz054qJQJ5sTc5mg2q3KxTUhBBTTPB7nuy6HYTX0YVuStCBuCmBAa1zt8kL0mmBeV4w74QHtBqZd1ff6foRT4e0xtEhyeFIR9oev0XM9ArE9DQQtyeakZjhKVrwd4w30Ngj0dIIOClUk1W_CoczJ5qzEvbPosezuA2O97F8o88sYAyx_H91GrTsnNtezvIkgfaVHzdUD2uk0hQCXoNVkAKFAzxeJ_FOiDV">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">MITS x Ethnotech</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-11">LMS Portal</span>
+</div>
+<div class="flex flex-col gap-1 px-3 flex-1 overflow-y-auto">
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-inverse-surface transition-colors duration-200 active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-inverse-surface transition-colors duration-200 active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+                Attendance
+            </a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-inverse-surface transition-colors duration-200 active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+                Courses
+            </a>
+<a class="border-l-4 border-primary text-primary font-bold dark:text-primary-fixed-dim dark:border-primary-fixed-dim bg-surface-container-low active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-r-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+                LeetCode Logs
+            </a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-inverse-surface transition-colors duration-200 active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                Chat
+                <span class="ml-auto bg-danger text-on-error text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-inverse-surface transition-colors duration-200 active:scale-[0.98] transition-transform duration-150 flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+<div class="px-3 mt-auto pt-4 border-t border-outline-variant">
+<button class="w-full bg-primary-container text-on-primary-container hover:bg-primary hover:text-white transition-colors duration-200 py-3 rounded-lg font-label-md text-label-md flex justify-center items-center gap-2 active:scale-95 shadow-sm">
+                Check-in Now
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface dark:bg-slate-900 sticky top-0 z-40 w-full border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center px-margin-page h-16">
+<div class="flex items-center gap-4">
+<!-- Search bar on left logic simulated -->
+<div class="relative hidden sm:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-border-subtle rounded-full text-sm font-body-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" placeholder="Search logs..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-outline hover:bg-surface-container-low dark:hover:bg-inverse-surface rounded-full p-2 active:scale-95 transition-all flex items-center justify-center relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+</button>
+<button class="text-on-surface-variant dark:text-outline hover:bg-surface-container-low dark:hover:bg-inverse-surface rounded-full p-2 active:scale-95 transition-all flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-border-subtle shrink-0 ml-2">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a young student programmer looking confident in a well-lit modern workspace with subtle blue lighting, representing the user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5yjXskuMud3shsJFk_WtGbAZHj91QuepB_YXjxmA9q-m8tL-HVcu-fTHIgEtLQIAS3XJjjJOUX3oQUPQOOvasO7u4FFUpT7gqizehRK08xN1RIC-BMFvm9Bj6vP9m98ysel-KeX3Cb042movgIGDeJPP2zSXEEbWOdc0SQ3ZfVm1n5UL8oPW21y0WYMkxpl44sXpclLbvcKtvWy2KCC9xX6Oovj-3SX54a3-yhPaWUh_-86sLwx3T">
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-margin-page overflow-x-hidden">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-stack-lg">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Algorithmic Growth</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">student_algo_dev • Tracking LeetCode Progress</p>
+</div>
+<button class="bg-surface-container-lowest border border-border-subtle text-primary hover:bg-surface-container-low transition-colors duration-200 py-2 px-4 rounded-lg font-label-md text-label-md flex items-center gap-2 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+                    Sync Profile
+                </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter mb-stack-lg">
+<!-- Total Solved Card (Span 4) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl border border-border-subtle shadow-ambient p-6 relative overflow-hidden border-t-4 border-t-primary">
+<div class="flex justify-between items-start mb-4">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Total Solved</h2>
+<span class="material-symbols-outlined text-success bg-success/10 p-1.5 rounded-lg">task_alt</span>
+</div>
+<div class="flex items-end gap-3 mb-6">
+<span class="font-display-lg text-display-lg text-primary">342</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mb-2">/ 500 Goal</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 68.4%;"></div>
+</div>
+<div class="flex justify-between mt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Progress</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">68%</span>
+</div>
+</div>
+<!-- Current Streak Card (Span 4) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl border border-border-subtle shadow-ambient p-6 relative overflow-hidden border-t-4 border-t-warning">
+<div class="flex justify-between items-start mb-4">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Current Streak</h2>
+<span class="material-symbols-outlined text-warning bg-warning/10 p-1.5 rounded-lg">local_fire_department</span>
+</div>
+<div class="flex items-center gap-4 mb-2">
+<span class="font-display-lg text-display-lg text-warning">14</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant mt-2">Days</span>
+</div>
+<p class="font-body-sm text-body-sm text-success flex items-center gap-1 mt-4">
+<span class="material-symbols-outlined text-sm">trending_up</span> Keep it up! Best streak: 42 days
+                    </p>
+</div>
+<!-- Difficulty Split (Span 4) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl border border-border-subtle shadow-ambient p-6 relative overflow-hidden border-t-4 border-t-accent-purple">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-4">Difficulty Split</h2>
+<div class="flex items-center gap-6">
+<!-- Simulated Pie Chart via CSS Conic Gradient -->
+<div class="w-24 h-24 rounded-full relative shrink-0" style="background: conic-gradient(#10b981 0% 50%, #f59e0b 50% 85%, #ef4444 85% 100%);">
+<div class="absolute inset-2 bg-surface-container-lowest rounded-full flex items-center justify-center">
+<span class="font-label-md text-label-md">342</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-1">
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="font-body-sm text-on-surface">Easy</span>
+</div>
+<span class="font-code-md">171</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-warning"></span>
+<span class="font-body-sm text-on-surface">Medium</span>
+</div>
+<span class="font-code-md">120</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-danger"></span>
+<span class="font-body-sm text-on-surface">Hard</span>
+</div>
+<span class="font-code-md">51</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Heatmap Section -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle shadow-ambient p-6 overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Submission Activity</h2>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span>Less</span>
+<div class="flex gap-1">
+<div class="heatmap-cell level-0"></div>
+<div class="heatmap-cell level-1"></div>
+<div class="heatmap-cell level-2"></div>
+<div class="heatmap-cell level-3"></div>
+<div class="heatmap-cell level-4"></div>
+</div>
+<span>More</span>
+</div>
+</div>
+<!-- Simulated Heatmap Grid -->
+<div class="w-full overflow-x-auto pb-2">
+<div class="min-w-[700px] flex gap-1">
+<!-- Generating a few columns to simulate a year -->
+<script>
+                            for(let col=0; col<52; col++) {
+                                document.write('<div class="flex flex-col gap-1">');
+                                for(let row=0; row<7; row++) {
+                                    // Randomize level for visual demo
+                                    let rand = Math.random();
+                                    let level = 'level-0';
+                                    if(rand > 0.8) level = 'level-4';
+                                    else if(rand > 0.6) level = 'level-3';
+                                    else if(rand > 0.4) level = 'level-2';
+                                    else if(rand > 0.2) level = 'level-1';
+                                    
+                                    document.write(`<div class="heatmap-cell ${level}" title="${Math.floor(Math.random()*10)} submissions"></div>`);
+                                }
+                                document.write('</div>');
+                            }
+                        </script>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

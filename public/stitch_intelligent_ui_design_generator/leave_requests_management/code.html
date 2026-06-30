@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MITS LMS - Leave Requests</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#0052cc",
+                        "danger": "#ef4444",
+                        "outline": "#737685",
+                        "on-background": "#191c1e",
+                        "accent-purple": "#8b5cf6",
+                        "surface-variant": "#e0e3e5",
+                        "secondary-fixed": "#e9ddff",
+                        "on-surface-variant": "#434654",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-surface": "#2d3133",
+                        "primary-fixed": "#dae2ff",
+                        "slate-500": "#64748b",
+                        "on-tertiary-container": "#5debaf",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#fffbff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "tertiary": "#004e33",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "slate-900": "#0f172a",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface": "#f7f9fb",
+                        "surface-tint": "#0c56d0",
+                        "on-primary-fixed": "#001848",
+                        "secondary-container": "#8455ef",
+                        "tertiary-container": "#006846",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "border-subtle": "#e2e8f0",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error": "#ffffff",
+                        "warning": "#f59e0b",
+                        "on-surface": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container": "#eceef0",
+                        "outline-variant": "#c3c6d6",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-container": "#c4d2ff",
+                        "info": "#0052cc",
+                        "on-secondary-fixed": "#23005c",
+                        "success": "#10b981",
+                        "inverse-primary": "#b2c5ff",
+                        "primary": "#003d9b",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "secondary": "#6b38d4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "stack-sm": "0.5rem",
+                        "stack-lg": "2rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1440px",
+                        "stack-md": "1rem",
+                        "margin-page": "2rem"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Outfit"],
+                        "code-md": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Outfit"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Outfit"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "code-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+        
+        /* Subtle scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        
+        /* Ambient shadows */
+        .ambient-shadow { box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
+        .ambient-shadow-lg { box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); }
+    </style>
+</head>
+<body class="text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="docked full-width top-0 sticky z-40 border-b border-border-subtle dark:border-outline-variant bg-surface/80 backdrop-blur-md shadow-sm dark:shadow-none flex justify-between items-center h-16 w-full pl-[280px] pr-gutter">
+<!-- Search Bar (Left) -->
+<div class="flex items-center flex-1 max-w-md ml-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+<input class="w-full bg-surface-container-low border border-border-subtle rounded-lg py-1.5 pl-9 pr-4 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors" placeholder="Search leave requests..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="hidden lg:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-lg px-3 py-2 font-label-md text-label-md" href="#">Overview</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-lg px-3 py-2 font-label-md text-label-md" href="#">Reports</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-lg px-3 py-2 font-label-md text-label-md" href="#">Logs</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg hidden md:block">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+<div class="h-8 w-px bg-border-subtle mx-1"></div>
+<button class="flex items-center gap-2 text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low rounded-lg p-1 pr-3 transition-colors">
+<img alt="User profile photo" class="w-8 h-8 rounded-full object-cover border border-border-subtle" data-alt="Professional corporate headshot of a female administrator with a friendly expression, wearing business casual attire, against a light clean background. High quality, soft professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgrK3x52Xs-yuKeOsWrn_-oAB4uBR-2QqG-8Agc3Hj0WUCbPAztbkUyyM7vJjbB0BUlmGzCFVvBm_zHCCpIz6BX0yq0z-5LmW6yVoIvpyz5gos6TGvfvsJLtiVW0veIXWnNMchk-S8KEIDJ9ZmZJ_ez61KIW-_OhCcXurcsyatjUQjYkYtzXAzuPaa4eTsw6WVrLfeipG805ed17QbWihzpHfJEQTI_8qEl9TERUSWusKFgsbAoPnu"/>
+<span class="font-label-md text-label-md hidden md:block">Profile</span>
+</button>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 border-r border-border-subtle dark:border-outline-variant shadow-sm dark:shadow-none flex flex-col bg-surface-container-lowest dark:bg-surface-container-low z-50">
+<!-- Header / Brand -->
+<div class="p-6 border-b border-border-subtle">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary">school</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed leading-tight">MITS LMS</h1>
+<p class="font-label-sm text-label-sm text-slate-500">Learning Management System</p>
+</div>
+</div>
+</div>
+<!-- Main Navigation -->
+<div class="flex-1 overflow-y-auto py-4">
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+                    Attendance
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim border-l-4 border-primary font-bold bg-surface-container-low dark:bg-surface-container-high font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined filled">assignment</span>
+                    Tasks
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">quiz</span>
+                    Exams
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">code</span>
+                    LeetCode Tracker
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">chat</span>
+                        Chat
+                    </div>
+<span class="bg-danger text-on-error font-label-sm text-[10px] px-1.5 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</nav>
+</div>
+<!-- CTA & Footer -->
+<div class="p-4 border-t border-border-subtle mt-auto">
+<button class="w-full bg-primary-container text-on-primary font-label-md text-label-md py-2.5 rounded-lg hover:bg-primary transition-colors mb-4 flex items-center justify-center gap-2 Active: scale-98 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-sm">how_to_reg</span>
+                Check-in Now
+            </button>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm rounded-lg" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+                    Help Center
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm rounded-lg" href="#">
+<span class="material-symbols-outlined text-sm">logout</span>
+                    Logout
+                </a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] p-margin-page min-h-[calc(100vh-64px)] max-w-container-max mx-auto flex gap-6">
+<!-- Left Column: Tasks / Requests List -->
+<div class="flex-1 flex flex-col gap-6">
+<!-- Page Header -->
+<header class="flex justify-between items-end pb-4 border-b border-border-subtle">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-slate-900">Leave Requests</h2>
+<p class="font-body-sm text-body-sm text-slate-500 mt-1">Review and manage student absence requests.</p>
+</div>
+<div class="flex gap-2">
+<div class="flex bg-surface-container-low rounded-lg p-1 border border-border-subtle">
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded-md bg-white shadow-sm border border-border-subtle text-primary">Pending</button>
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded-md text-on-surface-variant hover:text-primary transition-colors">History</button>
+</div>
+</div>
+</header>
+<!-- Request Cards List -->
+<div class="flex flex-col gap-4">
+<!-- Card 1: Pending, Multi-day -->
+<article class="bg-white rounded-lg border border-border-subtle ambient-shadow flex flex-col border-t-4 border-t-warning overflow-hidden transition-shadow hover:ambient-shadow-lg">
+<div class="p-5 flex gap-4">
+<!-- Student Avatar -->
+<div class="shrink-0">
+<img alt="Student" class="w-12 h-12 rounded-full object-cover border border-border-subtle" data-alt="Professional headshot of a male engineering student, looking focused, wearing a neat button-down shirt. Clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD42-abcLLnkW8NEDF4itDfuxx_whydx-NdkmZnK4I6LaC5z7sdVpxtQ_Ay-mbx6PyQwVt4cNfVv604r38UkAW-bsV0YiIOAsIrPA1jBX9A0SsHzwUwufoy22lWK-AIyMhneckVrADAp459yC7ufMUAdcix6KkPIUnOxgRXL1YVDVI3ljwW4a1Wf-ZNU2pva8Py3WLp3olmourPgYy0GiUmgl6od7JVxt9AcNC8VLeUnLONniijMdr1"/>
+</div>
+<!-- Content -->
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<div>
+<h3 class="font-label-md text-label-md text-slate-900 truncate">Rahul Sharma</h3>
+<p class="font-code-md text-[12px] text-slate-500">ID: 21691A05A3 • CSE-C</p>
+</div>
+<span class="bg-warning/10 text-warning font-label-sm text-label-sm px-2.5 py-1 rounded-md border border-warning/20">Pending</span>
+</div>
+<div class="mt-3 grid grid-cols-2 gap-4">
+<div>
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Leave Type</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-sm">event_busy</span>
+<span class="font-body-sm text-body-sm font-medium">Multi-Day Medical</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Duration</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+<span class="font-body-sm text-body-sm font-medium">Oct 12 - Oct 14 (3 Days)</span>
+</div>
+</div>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Reason provided</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant bg-surface p-3 rounded border border-border-subtle">
+                                    "Suffering from viral fever. Doctor advised 3 days of rest. Medical certificate attached."
+                                </p>
+</div>
+<!-- Attachments -->
+<div class="mt-3 flex gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-border-subtle rounded text-xs font-medium hover:bg-surface-container-high transition-colors text-primary">
+<span class="material-symbols-outlined text-[16px]">description</span>
+                                    medical_cert.pdf
+                                </button>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="bg-slate-50 px-5 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+<div class="flex-1">
+<input class="w-full bg-white border border-border-subtle rounded py-1.5 px-3 font-body-sm text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors" placeholder="Add a note to student (optional)..." type="text"/>
+</div>
+<div class="flex gap-2 shrink-0">
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded bg-white border border-danger text-danger hover:bg-error-container/20 transition-colors">Reject</button>
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded bg-primary-container text-on-primary hover:bg-primary transition-colors">Approve Request</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Pending, Hourly -->
+<article class="bg-white rounded-lg border border-border-subtle ambient-shadow flex flex-col border-t-4 border-t-warning overflow-hidden transition-shadow hover:ambient-shadow-lg">
+<div class="p-5 flex gap-4">
+<div class="shrink-0">
+<img alt="Student" class="w-12 h-12 rounded-full object-cover border border-border-subtle" data-alt="Professional headshot of a female engineering student, smiling slightly, wearing glasses and a formal blouse. Clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPNTsc0aqVnkn3IUSybAOVUBqfC6evVxhqLd5hWE8eu1eaj2ktjKIVQaPX982kOYKvUcsaT0EE_IL2ySxAGd3vAQsy4yjDfp0TQb5qAp2WrtsFpaMItGGc_bp3G77Uo2Gm1OW5E4E4PMSYG3_lA1uH3rbZBqKzTzUD15CTIKFgpY6l3seQmb2ag-U3m-V5NtisGHgasO8F6LH6415uEdhhSLS0yGpkDOK2AIPnskbA6uUMmeIs-He4"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<div>
+<h3 class="font-label-md text-label-md text-slate-900 truncate">Priya Patel</h3>
+<p class="font-code-md text-[12px] text-slate-500">ID: 21691A04B2 • ECE-A</p>
+</div>
+<span class="bg-warning/10 text-warning font-label-sm text-label-sm px-2.5 py-1 rounded-md border border-warning/20">Pending</span>
+</div>
+<div class="mt-3 grid grid-cols-2 gap-4">
+<div>
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Leave Type</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-sm">hourglass_empty</span>
+<span class="font-body-sm text-body-sm font-medium">Hourly (Permission)</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Duration</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+<span class="font-body-sm text-body-sm font-medium">Today, 2:00 PM - 4:00 PM</span>
+</div>
+</div>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mb-1">Reason provided</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant bg-surface p-3 rounded border border-border-subtle">
+                                    "Need to attend a mandatory bank appointment regarding educational loan documentation."
+                                </p>
+</div>
+</div>
+</div>
+<div class="bg-slate-50 px-5 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+<div class="flex-1">
+<input class="w-full bg-white border border-border-subtle rounded py-1.5 px-3 font-body-sm text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 transition-colors" placeholder="Add a note to student (optional)..." type="text"/>
+</div>
+<div class="flex gap-2 shrink-0">
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded bg-white border border-danger text-danger hover:bg-error-container/20 transition-colors">Reject</button>
+<button class="px-4 py-1.5 font-label-sm text-label-sm rounded bg-primary-container text-on-primary hover:bg-primary transition-colors">Approve Request</button>
+</div>
+</div>
+</article>
+</div>
+</div>
+<!-- Right Column: Context/Overview Widget -->
+<aside class="w-80 shrink-0 hidden xl:block flex flex-col gap-6">
+<!-- Today's Overview -->
+<div class="bg-white rounded-lg border border-border-subtle ambient-shadow overflow-hidden sticky top-24">
+<div class="p-4 border-b border-border-subtle bg-slate-50">
+<h3 class="font-label-md text-label-md text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">analytics</span>
+                        Today's Overview
+                    </h3>
+</div>
+<div class="p-4">
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface p-3 rounded-lg border border-border-subtle text-center">
+<span class="block font-headline-md text-headline-md text-slate-900">12</span>
+<span class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider mt-1 block">Total Requests</span>
+</div>
+<div class="bg-warning/5 p-3 rounded-lg border border-warning/20 text-center">
+<span class="block font-headline-md text-headline-md text-warning">4</span>
+<span class="font-label-sm text-[11px] text-warning uppercase tracking-wider mt-1 block">Pending Action</span>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="font-label-sm text-[11px] text-slate-500 uppercase tracking-wider border-b border-border-subtle pb-1">Activity Breakdown</h4>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span class="font-body-sm text-body-sm text-slate-700">Approved</span>
+</div>
+<span class="font-code-md text-sm text-slate-900 font-medium">6</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-danger"></div>
+<span class="font-body-sm text-body-sm text-slate-700">Rejected</span>
+</div>
+<span class="font-code-md text-sm text-slate-900 font-medium">2</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+</body></html>
