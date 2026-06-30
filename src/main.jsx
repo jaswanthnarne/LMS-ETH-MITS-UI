@@ -85,9 +85,19 @@ const empty = {
   quiz: {
     title: '',
     department: '',
+    instructions: '',
     batch: '',
-    durationSeconds: 60,
-    questions: [{ text: '', options: ['', '', '', ''], correctIndex: 0, points: 1 }]
+    batches: [],
+    durationSeconds: 1800,
+    passingPercentage: 40,
+    questions: [{ text: '', type: 'single_correct', options: ['', '', '', ''], correctIndex: 0, correctAnswerText: '', points: 1 }],
+    requireWebcam: false,
+    requireMic: false,
+    requireScreenshare: false,
+    shuffleQuestions: false,
+    showAnswersToStudents: false,
+    enableCertificate: false,
+    allowPaperDownload: false
   },
   answer: {},
   leetcode: { username: '', easy: 0, medium: 0, hard: 0, streak: 0 },
