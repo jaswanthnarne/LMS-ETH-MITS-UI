@@ -84,6 +84,7 @@ const empty = {
   leave: { type: 'single-day', fromDate: '', toDate: '', hours: 0, reason: '' },
   quiz: {
     title: '',
+    department: '',
     batch: '',
     durationSeconds: 60,
     questions: [{ text: '', options: ['', '', '', ''], correctIndex: 0, points: 1 }]

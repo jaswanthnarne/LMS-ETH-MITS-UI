@@ -156,6 +156,7 @@ export default function QuizManagement({ data, forms, setForm, api, action, setS
 
   function startCreateQuiz() {
     setForm('quiz', 'title', '');
+    setForm('quiz', 'department', '');
     setForm('quiz', 'batch', '');
     setForm('quiz', 'batches', []);
     setForm('quiz', 'durationSeconds', 60);
@@ -170,6 +171,7 @@ export default function QuizManagement({ data, forms, setForm, api, action, setS
 
   function startEditingQuiz(quiz) {
     setForm('quiz', 'title', quiz.title);
+    setForm('quiz', 'department', quiz.department || '');
     setForm('quiz', 'batch', quiz.batch?._id || quiz.batch);
     setForm('quiz', 'batches', quiz.batches || (quiz.batch ? [quiz.batch?._id || quiz.batch] : []));
     setForm('quiz', 'durationSeconds', quiz.durationSeconds || 60);
@@ -291,10 +293,17 @@ export default function QuizManagement({ data, forms, setForm, api, action, setS
                     <h3 className="font-title text-sm font-semibold text-textPrimary truncate">{quiz.title}</h3>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-textMuted mt-1">
                       <span className="font-medium bg-bgSecondary border border-borderCool/60 px-2 py-0.5 rounded text-[10px]">
-                        {quiz.batch ? `${quiz.batch.name}` : 'All'}
+                        {quiz.batches && quiz.batches.length > 0 
+                          ? quiz.batches.map(b => b.name).join(', ') 
+                          : quiz.batch ? `${quiz.batch.name}` : 'All'}
                       </span>
+                      {quiz.department && (
+                        <span className="font-bold bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] uppercase">
+                          Dept: {quiz.department}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
-                        <HelpCircle size={13} /> {quiz.questions?.length || 0} MCQ Questions
+                        <HelpCircle size={13} /> {quiz.questions?.length || 0} Questions
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock size={13} /> {quiz.durationSeconds}s duration
@@ -396,10 +405,12 @@ export default function QuizManagement({ data, forms, setForm, api, action, setS
         </DataList>
       </div>
 
-      {/* Quiz editor overlay modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingQuizId ? 'Update Assessment Details' : 'Compile Live MCQ Quiz'}>
         <form className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-1.5" onSubmit={handleSubmit}>
-          <Field placeholder="Assessment Title" value={forms.quiz.title} onChange={(value) => setForm('quiz', 'title', value)} required />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Assessment Title" placeholder="Assessment Title" value={forms.quiz.title} onChange={(value) => setForm('quiz', 'title', value)} required />
+            <Field label="Department / Division" placeholder="Department (e.g. CSE, ECE)" value={forms.quiz.department || ''} onChange={(value) => setForm('quiz', 'department', value)} required />
+          </div>
           
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-textMuted">Assign Batches / Cohorts</span>
